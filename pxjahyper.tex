@@ -33,6 +33,13 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
   ただし、エンジンが {\pTeX} の場合は、out2uni を利用
   する場合を除き、JIS~X~0208にない文字は出力できない
   （hyperrefの警告が出る）。
+\item {\TeX} の版面拡大機能が使われている
+  （|\mag| が 1000 でない；典型的には\Pkg{jsclasses}の
+  文書クラスで基底フォントサイズが10\,pt以外である）
+  場合に、\Pkg{hyperref}が出力する papersize special の
+  紙面サイズの値が不正になるが、この場合に |\mag| 値を
+  考慮して求めた正しいサイズによる papersize special を
+  改めて出力する。
 \end{itemize}
 
 \paragraph{前提フォーマット}
@@ -40,18 +47,18 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
 
 \paragraph{依存パッケージ}
 \begin{itemize}
-\item \Pkg{hyperref} パッケージ
-\item \Pkg{hyperref} が依存するパッケージ
-  （\Pkg{atbegshi} 等）。
+\item \Pkg{hyperref}パッケージ
+\item \Pkg{hyperref}が依存するパッケージ
+  （\Pkg{atbegshi}等）。
 \end{itemize}
 
 %===========================================================
 \section{パッケージの読込}
 
 |\usepackage| で読み込む。
-\begin{verbatim}
+\begin{quote}\small\begin{verbatim}
 \usepackage[オプション,...]{pxjahyper}
-\end{verbatim}
+\end{verbatim}\end{quote}
 
 使用可能なオプションは以下の通り。
 \begin{itemize}
@@ -62,6 +69,8 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
 \item |out2uni|\Means
   out2uniフィルタ（角藤氏製作）を使うことを前提にした
   出力を行う。
+  （|tounicode| が無効になる。）
+  {\upLaTeX} では使用不可。
 \item |noout2uni|（既定）\Means
   |out2uni| の否定。
 \item |bigcode|\Means
@@ -86,7 +95,25 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
 「概要」で述べた機能は（オプション設定に応じて）
 自動的に実施される。
 
-以下の命令が提供される。
+\paragraph{Unicode符号値による入力}
+PDF文字列入力中で、|\Ux| が以下の意味になる。
+PDF文字列以外では |\Ux| は以前の定義（または未定義）に戻る。
+
+\begin{itemize}
+\item |\Ux{|Unicode符号値|}|\Means
+  その符号値の文字を出力する。
+\end{itemize}
+
+符号値は16進数で指定する。
+
+なお、\Pkg{OTF}パッケージの |\UTF| 命令は、PDF文字列中では
+out2uni用の出力を行うように設計されているが、
+本パッケージを {\upLaTeX} で用いた場合は、
+|\UTF| も（PDF文字列中では）|\Ux| と同じ動作
+（つまりtounicode用の出力）になるように変更される。
+
+\paragraph{PDF文字列用の文字命令の定義}
+以下の命令が提供される。（プリアンブルでのみ使用可能。）
 
 \begin{itemize}
 \item |\pxDeclarePdfTextCommand{\制御綴}{|\Meta{JIS符号値}|}{|\Meta

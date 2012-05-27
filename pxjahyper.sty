@@ -65,10 +65,6 @@
   auto,tounicode,noout2uni,nobigcode%
 }
 \ProcessOptions*
-% adjustment
-\ifpxhy@zerox
-  \pxhy@tounicodefalse
-\fi
 
 %------------------- environment check
 
@@ -79,7 +75,7 @@
 }
 %% hyperref option 'unicode' must not be set.
 \expandafter\ifx\csname ifHy@unicode\expandafter\endcsname
-  \csname iftrue\endcsname
+ \csname iftrue\endcsname
   \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
   \expandafter\endinput
 \fi
@@ -120,6 +116,26 @@
   \expandafter\endinput
 \fi
 
+%% adjustment
+% upTeX not in unicode is not seen as upTeX.
+\if u\pxhy@jcode\else
+  \pxhy@uptexfalse
+\fi
+% out2uni cannot be used with upTeX.
+\ifpxhy@uptex \ifpxhy@zerox
+  \pxhy@warn{out2uni is invalid in upTeX}
+  \pxhy@zeroxfalse
+\fi\fi
+% bigcode cannot be used without upTeX.
+\ifpxhy@uptex\else \ifpxhy@bigcode
+  \pxhy@warn{bigcode is invalid without upTeX}
+  \pxhy@bigcodefalse
+\fi\fi
+% out2uni disables tounicode.
+\ifpxhy@zerox
+  \pxhy@tounicodefalse
+\fi
+
 \iffalse
 \typeout{%
 pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
@@ -145,6 +161,24 @@ pxhy@driver = \the\pxhy@driver^^J%
   \endgroup
 }
 
+%% \pxhy@get@jchar{<num>}
+% Let \pxhy@jchar a macro expanding to a single jchar token
+% of the char code <num>.
+\def\pxhy@get@jchar#1{%
+  \begingroup
+    \pxhy@forcecjktoken
+    \kansujichar\@ne=#1\relax
+    \xdef\pxhy@jchar{\kansuji\@ne}%
+  \endgroup
+}
+
+%% \pxhy@forcecjktoken
+\ifpxhy@uptex
+  \let\pxhy@forcecjktoken\forcecjktoken
+\else
+  \let\pxhy@forcecjktoken\relax
+\fi
+
 %------------------- output 'tounicode' special
 \ifpxhy@tounicode
 
@@ -162,6 +196,165 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi                           %</dvipdfmx>
 
 \fi
+%------------------- papersize special adjustment
+
+% When the magnification is in effect (i.e. \mag<>1000), hyperref
+% emits a papersize special with wrong value. (dvipdfmx interprets
+% the lengths in the special as 'true' length.) So here a papersize
+% special with adjusted values will be output.
+\ifnum\mag=1000 \else
+  \expandafter\ifx\csname ifHy@setpagesize\expandafter\endcsname
+   \csname iftrue\endcsname % hyperref setpagesize is on
+    \ifnum0<\mag \ifnum32768>\mag % \mag is in valid range
+      \begingroup
+        \@ifundefined{stockwidth}{}{%else
+          \paperwidth=\stockwidth
+          \paperheight=\stockheight
+        }%
+        \@tempcnta=\mag \advance\@tempcnta100000
+        \def\pxhy@next1#1#2#3#4#5\relax{%
+          \def\pxhy@tmpa{#1#2.#3#4#5}%
+        }%
+        \expandafter\pxhy@next\the\@tempcnta\relax
+        \paperwidth=\pxhy@tmpa\paperwidth
+        \paperheight=\pxhy@tmpa\paperheight
+        \xdef\pxhy@spec@papersize{%
+          papersize=\the\paperwidth,\the\paperheight
+        }%
+        \AtBeginShipoutFirst{%
+          \special{\pxhy@spec@papersize}%
+        }
+      \endgroup
+    \fi\fi
+  \fi
+\fi
+
+%------------------- 
+
+
+\def\pxhy@uc@REPL{FFFD}
+\def\pxhy@uc@XNAC{FDD1} % not-a-char codepoint used as marker
+\let\pxhy@burst\romannumeral
+\let\pxhy@nxend\indent
+
+%% \pxhy@uchex{<hex>}
+% The entity of the code-value input function. If the input
+% is a valid code value in hex then it passes the value to
+% \pxhy@uchex@res in 4-6 digits; otherwise passes FFFD to
+% \pxhy@uchex@res.
+\def\pxhy@uchex#1{%
+  \expandafter\pxhy@uchex@a\pxhy@burst-`>#1\pxhy@nxend
+}
+\edef\pxhy@uchex@err{%
+  \noexpand\pxhy@uchex@res{\pxhy@uc@REPL}%
+}
+\def\pxhy@uchex@a#1#2\pxhy@nxend{%
+  \ifnum2<"1#1
+    \expandafter\pxhy@uchex@b\romannumeral-"#1#2\pxhy@nxend{#1#2}%
+  \else \pxhy@uchex@err
+  \fi
+}
+\def\pxhy@uchex@b#1\pxhy@nxend#2{%
+  \ifx\pxhy@empty#1\pxhy@empty
+    \ifnum"#2>"10FFFF
+      \pxhy@uchex@err
+    \else\ifnum"#2>"FFF
+      \pxhy@uchex@res{#2}%
+    \else
+      \pxhy@uchex@c#2"000\pxhy@end
+    \fi\fi
+  \else \pxhy@uchex@err
+  \fi
+}
+\def\pxhy@uchex@c#1#2#3#4#5#6\pxhy@end{%
+  \pxhy@uchex@d#1#2#3#4#5\pxhy@end
+}
+\def\pxhy@uchex@d#1"#2\pxhy@end{%
+  \pxhy@uchex@res{#2#1}%
+}
+
+\ifpxhy@uptex                   %<*upTeX>
+
+  %% \pxhy@marker: a not-a-char U+FDD1
+  \pxhy@get@jchar{\ucs"\pxhy@uc@XNAC}
+  \edef\pxhy@marker{\pxhy@jchar}
+
+  %% Makes \Ux and \UTF be the code input command in PDF strings.
+  \pdfstringdefDisableCommands{%
+    \let\Ux\pxhy@uchex
+    \let\UTF\pxhy@uchex
+    \let\UTFM\pxhy@uchex
+    \let\UTFK\pxhy@uchex
+    \let\UTFC\pxhy@uchex
+    \let\UTFT\pxhy@uchex
+  }
+
+  %BEGIN-- in the following block #1 means the marker
+  \def\pxhy@next#1{% #1=marker
+    %% \pxhy@uchex@res
+    % Expands to a tag string which will later be converted to
+    % a real character in the postprocess.
+    \def\pxhy@uchex@res##1{#1##1>}%
+    %% \pxhy@posthook
+    % The postprocess of this package. It is registered to
+    % \pdfstringdefPostHook.
+    \def\pxhy@posthook##1{%
+      \expandafter\pxhy@posthook@a##1#1\pxhy@end
+      \pxhy@posthook@b##1%
+    }%
+    \def\pxhy@posthook@a##1#1##2\pxhy@end{%
+      \ifx\pxhy@empty##2\pxhy@empty
+        \expandafter\@gobbletwo
+      \fi
+    }%
+    \def\pxhy@posthook@b##1{%
+      \let\pxhy@str\@empty
+      \expandafter\pxhy@posthook@c##1#1>%
+      \global\let##1=\pxhy@str
+    }%
+    \def\pxhy@posthook@c##1#1##2>{%
+      \ifx\pxhy@empty##2\pxhy@empty
+        \edef\pxhy@str{\pxhy@str##1}%
+      \else
+        \pxhy@get@jchar{"##2}%
+        \edef\pxhy@str{\pxhy@str##1\pxhy@jchar}%
+        \expandafter\pxhy@posthook@c
+      \fi
+    }%
+  }
+  \expandafter\pxhy@next\pxhy@marker
+  %END--
+
+  % Add \pxhy@posthook to \pdfstringdefPostHook.
+  \begingroup
+    \toks@\expandafter{\pdfstringdefPostHook{#1}}
+    \edef\pxhy@next{%
+      \gdef\noexpand\pdfstringdefPostHook##1{%
+        \the\toks@
+        \noexpand\pxhy@posthook{##1}%
+      }%
+    }%
+    \pxhy@next
+  \endgroup
+
+\else\ifpxhy@zerox              %<*!upTeX>
+
+  %% \pxhy@uchex@res
+  % Expands to \0x form.
+  \def\pxhy@uchex@res#1{%
+    \0x#1%
+  }
+
+  %% Makes \Ux be the code input command in PDF strings.
+  % (If the otf package is loaded, then \UTF already does
+  % the same thing.)
+  \pdfstringdefDisableCommands{%
+    \let\Ux\pxhy@uchex
+  }
+
+  %Note: if out2uni is off then \Ux remains undefined.
+\fi\fi                          %</upTeX>
+
 %------------------- Redefine text commands for PD1
 
 \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
@@ -221,28 +414,14 @@ pxhy@driver = \the\pxhy@driver^^J%
   #2{#1}%
 }
 
-%% \pxhy@get@jchar{<num>}
-% Let \pxhy@jchar a macro expanding to a single jchar token
-% of the char code <num>.
-\@onlypreamble\pxhy@get@jchar
-\def\pxhy@get@jchar#1{%
-  \begingroup
-    \pxhy@forcecjktoken
-    \kansujichar\@ne=#1\relax
-    \xdef\pxhy@jchar{\kansuji\@ne}%
-  \endgroup
-}
-
 %% \pxhy@get@body{<jis>}{<ucs>}
 \@onlypreamble\pxhy@get@body
 \ifpxhy@uptex                   %<*upTeX>
-  \let\pxhy@forcecjktoken\forcecjktoken
   \def\pxhy@get@body#1#2{%
     \pxhy@get@jchar{\ucs"#2}%
     \let\pxhy@body\pxhy@jchar
   }%
 \else                           %<*!upTeX>
-  \let\pxhy@forcecjktoken\relax
   \ifpxhy@zerox
     \def\pxhy@get@body#1#2{%
       \ifx\pxhy@end#1\pxhy@end
