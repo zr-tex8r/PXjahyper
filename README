@@ -1,0 +1,13 @@
+PXjahyper パッケージ
+
+pLaTeX + hyperref + dvipdfmx の環境における日本語の「しおり」の作成を
+支援する LaTeX パッケージ
+
+■インストール
+
+  - *.sty,   → $TEXMF/tex/latex/PXjahyper
+
+■ 更新履歴
+
+v0.2    <2012/05/27>
+  - 最初の公開版
