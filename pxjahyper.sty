@@ -14,6 +14,7 @@
 \def\pxhy@fatal#1#2{%
   \pxhy@error{#1}{#2Package loading is aborted right now.}%
 }
+\providecommand{\bxDebug}[1]{}
 
 %% packages
 \RequirePackage{atbegshi}
@@ -37,6 +38,9 @@
 }
 \DeclareOption{dvipdfm}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
+}
+\DeclareOption{nodvidriver}{%
+  \let\pxhy@driver\pxhy@driver@none
 }
 \DeclareOption{none}{%
   \let\pxhy@driver\pxhy@driver@none
@@ -74,11 +78,11 @@
   \pxhy@fatal{'hyperref' not yet loaded}{}%
   \endinput
 }
-%% hyperref option 'unicode' must not be set.
+
+%% Check for the hyperref option 'unicode'.
 \expandafter\ifx\csname ifHy@unicode\expandafter\endcsname
- \csname iftrue\endcsname
-  \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
-  \expandafter\endinput
+    \csname iftrue\endcsname
+  \pxhy@hy@unicodetrue
 \fi
 
 %% Check hyperref driver.
@@ -617,6 +621,54 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi
 
+%--------------------------------------- Enable hyperref unicode
+\ifpxhy@hy@unicode
+
+\bxDebug{Setup for hyperref 'unicode'}
+
+%% The following code is taken from hyperref.sty.
+%%%%BEGIN
+  \def\HyPsd@Char#1{%
+    \ifnum`#1<128 %
+      \@backslashchar 000#1%
+    \else
+      \ifnum`#1<65536 %
+        \expandafter\HyPsd@CharTwoByte\number`#1!%
+      \else
+        \expandafter\expandafter\expandafter\HyPsd@CharSurrogate
+        \intcalcSub{`#1}{65536}!%
+      \fi
+    \fi
+  }%
+  \def\HyPsd@CharTwoByte#1!{%
+    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
+    \IntCalcDiv#1!256!!%
+    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
+    \IntCalcMod#1!256!!%
+  }%
+  \def\HyPsd@CharOctByte#1!{%
+    \@backslashchar
+    \IntCalcDiv#1!64!%
+    \intcalcDiv{\IntCalcMod#1!64!}{8}%
+    \IntCalcMod#1!8!%
+  }%
+  \def\HyPsd@CharSurrogate#1!{%
+    \@backslashchar 33%
+    \IntCalcDiv#1!262144!%
+    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
+    \intcalcDiv{\IntCalcMod#1!262144!}{1024}!%
+    \@backslashchar 33%
+    \expandafter\expandafter\expandafter\IntCalcAdd
+    \intcalcDiv{\IntCalcMod#1!1024!}{256}!4!%
+    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
+    \IntCalcMod#1!256!!%
+  }%
+%%%%END
+
+%% disable the verification of bxjscls
+\let\jsCheckHyperrefUnicode\@empty
+
+\fi
 %--------------------------------------- All done
 \endinput
 %% EOF
