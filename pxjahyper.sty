@@ -28,8 +28,9 @@
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \let\pxhy@driver\@undefined
+\newif\ifpxhy@hy@unicode
 
-%------------------- option handling
+%--------------------------------------- Package options
 
 \DeclareOption{dvipdfmx}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
@@ -66,7 +67,7 @@
 }
 \ProcessOptions*
 
-%------------------- environment check
+%--------------------------------------- Environment check
 
 %% The hyperref package must be loaded in advance.
 \@ifpackageloaded{hyperref}{}{%else
@@ -135,6 +136,11 @@
 \ifpxhy@zerox
   \pxhy@tounicodefalse
 \fi
+% hyperref 'unicode' is allowed only on upLaTeX.
+\ifpxhy@hy@unicode\ifpxhy@uptex\else
+  \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
+  \expandafter\endinput
+\fi\fi
 
 \iffalse
 \typeout{%
@@ -147,7 +153,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 }
 \fi
 
-%------------------- helpers
+%--------------------------------------- Helpers
 
 %% pxhy@end
 \def\pxhy@end{\pxhy@end@}
@@ -179,7 +185,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \let\pxhy@forcecjktoken\relax
 \fi
 
-%------------------- output 'tounicode' special
+%--------------------------------------- Output 'tounicode' special
 \ifpxhy@tounicode
 
   \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
@@ -196,7 +202,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi                           %</dvipdfmx>
 
 \fi
-%------------------- papersize special adjustment
+%--------------------------------------- Papersize special adjustment
 
 % When the magnification is in effect (i.e. \mag<>1000), hyperref
 % emits a papersize special with wrong value. (dvipdfmx interprets
@@ -229,8 +235,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi
 
-%------------------- 
-
+%--------------------------------------- Hooks to pdfstringdef
 
 \def\pxhy@uc@REPL{FFFD}
 \def\pxhy@uc@XNAC{FDD1} % not-a-char codepoint used as marker
@@ -355,7 +360,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   %Note: if out2uni is off then \Ux remains undefined.
 \fi\fi                          %</upTeX>
 
-%------------------- Redefine text commands for PD1
+%--------------------------------------- Redefine text commands for PD1
 
 \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
 
@@ -443,7 +448,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi                             %</upTeX>
 
-%-------------------
+%%%%%%%%%%%%%%%%%%%% the definitions
 
 % JIS X 0213 does not distinguish the following pairs:
 %  - circumflex(U+02C6) and asciicircum(U+005E)
@@ -612,6 +617,6 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi
 
-%------------------- all done
+%--------------------------------------- All done
 \endinput
 %% EOF
