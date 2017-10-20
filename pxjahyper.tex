@@ -3,7 +3,8 @@
 \documentclass[a4paper]{jsarticle}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{0.2}
+\newcommand{\PkgVersion}{0.3a}
+\newcommand{\PkgDate}{2017/10/17}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -14,15 +15,15 @@
 \providecommand{\upLaTeX}{u\pLaTeX}
 %-----------------------------------------------------------
 \begin{document}
-\title{\Pkg{pxjahyper} パッケージ（v\PkgVersion）}
+\title{\Pkg{pxjahyper} パッケージ}
 \author{八登崇之\ （Takayuki YATO; aka.~``ZR''）}
-\date{2012/05/27}
+\date{v\PkgVersion\quad[\PkgDate]}
 \maketitle
 
 %===========================================================
 \section{概要}
 
-pLaTeX + hyperref + dvipdfmxの組み合わせで
+(u){\pLaTeX} + hyperref + dvipdfmxの組み合わせで
 日本語を含む「しおり」をもつPDF文書を作成する
 場合に必要となる機能を提供する。
 \begin{itemize}
@@ -34,22 +35,12 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
   する場合を除き、JIS~X~0208にない文字は出力できない
   （hyperrefの警告が出る）。
 \item {\TeX} の版面拡大機能が使われている
-  （|\mag| が 1000 でない；典型的には\Pkg{jsclasses}の
+  （|\mag| が1000でない；典型的には\Pkg{jsclasses}の
   文書クラスで基底フォントサイズが10\,pt以外である）
-  場合に、\Pkg{hyperref}が出力する papersize special の
+  場合に、\Pkg{hyperref}が出力するpapersize specialの
   紙面サイズの値が不正になるが、この場合に |\mag| 値を
-  考慮して求めた正しいサイズによる papersize special を
+  考慮して求めた正しいサイズによるpapersize specialを
   改めて出力する。
-\end{itemize}
-
-\paragraph{前提フォーマット}
-{\pLaTeX} および {\upLaTeX}。
-
-\paragraph{依存パッケージ}
-\begin{itemize}
-\item \Pkg{hyperref}パッケージ
-\item \Pkg{hyperref}が依存するパッケージ
-  （\Pkg{atbegshi}等）。
 \end{itemize}
 
 %===========================================================
@@ -73,15 +64,16 @@ pLaTeX + hyperref + dvipdfmxの組み合わせで
   {\upLaTeX} では使用不可。
 \item |noout2uni|（既定）\Means
   |out2uni| の否定。
-\item |bigcode|\Means
-  {\upTeX}でのToUnicode CMapとして既定の UTF8-UCS の代わりに\ 
-  UTF8-UTF16 を用いる。
+\item |bigcode|（既定）\Means
+  {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
+  UTF8-UTF16を用いる。
   （当該のファイルが存在する必要がある。）
-\item |nobigcode|（既定）\Means
+\item |nobigcode|\Means
   |bigcode| の否定。
+  \Note 0.3a版より既定を |bigcode| に変更した。
 \item |dvipdfmx|\Means
   dvipdfmxを前提とした動作を行う。
-\item |none|\Means
+\item |nodriver|/|none|\Means
   dvipdfmxを前提とした動作を抑止する。
   現状では、この場合には本パッケージは実質的に何の動作も行わない。
 \item |auto|（既定）\Means
