@@ -1,7 +1,7 @@
 %%
 %% This is file 'pxjahyper.sty'.
 %%
-%% Copyright (c) 2017 Takayuki YATO (aka. "ZR")
+%% Copyright (c) 2018 Takayuki YATO (aka. "ZR")
 %%   GitHub:   https://github.com/zr-tex8r
 %%   Twitter:  @zr_tex8r
 %%
@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2017/10/17 v0.3a]
+\ProvidesPackage{pxjahyper}[2018/01/13 v0.3b-pre]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -18,7 +18,9 @@
 \def\pxhy@error{\PackageError\pxhy@pkgname}
 \@onlypreamble\pxhy@fatal
 \def\pxhy@fatal#1#2{%
-  \pxhy@error{#1}{#2Package loading is aborted right now.}%
+  \PackageError\pxhy@pkgname
+   {#1}%
+   {#2Package loading is aborted right now.}%
 }
 \providecommand{\bxDebug}[1]{}
 
@@ -36,6 +38,7 @@
 \chardef\pxhy@driver@dvipdfmx=1
 \let\pxhy@driver\@undefined
 \newif\ifpxhy@hy@unicode
+\newif\ifpxhy@jacommentline
 
 %--------------------------------------- Package options
 
@@ -72,8 +75,14 @@
 \DeclareOption{nobigcode}{%
   \pxhy@bigcodefalse
 }
+\DeclareOption{jacommentline}{%
+  \pxhy@jacommentlinetrue
+}
+\DeclareOption{nojacommentline}{%
+  \pxhy@jacommentlinefalse
+}
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,bigcode%
+  auto,tounicode,noout2uni,bigcode,jacommentline%
 }
 \ProcessOptions*
 
@@ -147,10 +156,10 @@
   \pxhy@tounicodefalse
 \fi
 % hyperref 'unicode' is allowed only on upLaTeX.
-\ifpxhy@hy@unicode\ifpxhy@uptex\else
+\ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
   \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
   \expandafter\endinput
-\fi\fi
+\fi
 
 \iffalse
 \typeout{%
@@ -630,7 +639,9 @@ pxhy@driver = \the\pxhy@driver^^J%
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
-\bxDebug{Setup for hyperref 'unicode'}
+\PackageInfo\pxhy@pkgname
+ {The setup for hyperref 'unicode' is applied.\MessageBreak
+  (Note that this feature is experimental.)\@gobbletwo}
 
 %% The following code is taken from hyperref.sty.
 %%%%BEGIN
@@ -673,6 +684,36 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 %% disable the verification of bxjscls
 \let\jsCheckHyperrefUnicode\@empty
+
+\fi
+%--------------------------------------- 'jacommentline'
+\ifpxhy@jacommentline
+
+% The 'jacomemntline' feature outputs at the top of the
+% hyperref outline file (*.out) a comment line including
+% some Japanese characters.
+
+%% \pxhy@jacomment
+\let\pxhy@jacomment\@empty
+\begingroup
+  \@for\pxhy@x:={%
+    2433,244E,2555,2521,2524,256B,244F,467C,4B5C,386C,%
+    4A38,3B7A,2472,345E,245F,245E,2439%
+  }\do{%
+    \kansujichar1=\jis"\pxhy@x\relax
+    \xdef\pxhy@jacomment{\pxhy@jacomment\kansuji1}%
+  }
+\endgroup
+
+%% attach a hook
+\g@addto@macro\ReadBookmarks{%
+  \if@filesw
+    \ifx\@outlinefile\@undefined\else
+      \immediate\write\@outlinefile{%
+        \@percentchar\pxhy@jacomment.}%
+    \fi
+  \fi
+}
 
 \fi
 %--------------------------------------- All done
