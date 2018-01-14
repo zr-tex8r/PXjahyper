@@ -36,6 +36,7 @@ Please refer to the manual `pxjahyper.pdf` (in Japanese) for detail.
 Revision History
 ----------------
 
+  * Version 0.3b 〈2018/01/13〉
   * Version 0.3a 〈2017/10/17〉
   * Version 0.3  〈2012/05/28〉
   * Version 0.2  〈2012/05/27〉
