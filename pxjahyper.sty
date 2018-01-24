@@ -34,6 +34,7 @@
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
 \newif\ifpxhy@bigcode
+\let\pxhy@bigcode\relax
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \let\pxhy@driver\@undefined
@@ -70,10 +71,10 @@
   \pxhy@zeroxfalse
 }
 \DeclareOption{bigcode}{%
-  \pxhy@bigcodetrue
+  \let\pxhy@bigcode=t%
 }
 \DeclareOption{nobigcode}{%
-  \pxhy@bigcodefalse
+  \let\pxhy@bigcode=f%
 }
 \DeclareOption{jacommentline}{%
   \pxhy@jacommentlinetrue
@@ -82,7 +83,7 @@
   \pxhy@jacommentlinefalse
 }
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,bigcode,jacommentline%
+  auto,tounicode,noout2uni,jacommentline%
 }
 \ProcessOptions*
 
@@ -147,9 +148,17 @@
   \pxhy@zeroxfalse
 \fi\fi
 % bigcode cannot be used without upTeX.
-\ifpxhy@uptex\else \ifpxhy@bigcode
-  \pxhy@warn{bigcode is invalid without upTeX}
-  \pxhy@bigcodefalse
+\if t\pxhy@bigcode
+  \ifpxhy@uptex
+    \pxhy@bigcodetrue
+  \else
+    \pxhy@warn{bigcode is invalid without upTeX}
+  \fi
+\else\if f\pxhy@bigcode
+\else
+  \ifpxhy@uptex
+    \pxhy@bigcodetrue
+  \fi
 \fi\fi
 % out2uni disables tounicode.
 \ifpxhy@zerox
