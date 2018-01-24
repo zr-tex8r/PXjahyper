@@ -940,14 +940,17 @@ pxhy@driver = \the\pxhy@driver^^J%
 \endgroup
 
 %% attach a hook
-\g@addto@macro\ReadBookmarks{%
-  \if@filesw
-    \ifx\@outlinefile\@undefined\else
-      \immediate\write\@outlinefile{%
-        \@percentchar\pxhy@jacomment.}%
+\begingroup\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname ReadBookmarks\endcsname\relax\else
+  \g@addto@macro\ReadBookmarks{%
+    \if@filesw
+      \ifx\@outlinefile\@undefined\else
+        \immediate\write\@outlinefile{%
+          \@percentchar\pxhy@jacomment.}%
+      \fi
     \fi
-  \fi
-}
+  }
+\fi
 
 \fi
 %--------------------------------------- All done
