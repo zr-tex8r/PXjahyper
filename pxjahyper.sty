@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2018/01/25 v0.3c]
+\ProvidesPackage{pxjahyper}[2018/01/25 v0.3d-pre]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -421,6 +421,17 @@ pxhy@driver = \the\pxhy@driver^^J%
 \@onlypreamble\pxhy@revoke@pdf@tc
 \def\pxhy@revoke@pdf@tc#1{%
   \expandafter\let\csname PD1\string#1\endcsname\@undefined
+  \pxhy@make@txtcmd\pxhy@tmpa{PD1}#1%
+  \ifx#1\pxhy@tmpa
+    \pxhy@make@txtcmd#1?#1%
+  \fi
+}
+\@onlypreamble\pxhy@make@txtcmd
+\def\pxhy@make@txtcmd#1#2#3{%
+  \expandafter\def\expandafter#1\expandafter{%
+    \csname#2-cmd\expandafter\endcsname\expandafter#3%
+        \csname#2\string#3\endcsname
+  }%
 }
 
 %% \pxhy@revoke@pdf@tcc
