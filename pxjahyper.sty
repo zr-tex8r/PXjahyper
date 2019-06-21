@@ -1,7 +1,7 @@
 %%
 %% This is file 'pxjahyper.sty'.
 %%
-%% Copyright (c) 2018 Takayuki YATO (aka. "ZR")
+%% Copyright (c) 2019 Takayuki YATO (aka. "ZR")
 %%   GitHub:   https://github.com/zr-tex8r
 %%   Twitter:  @zr_tex8r
 %%
@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2018/07/15 v0.3d]
+\ProvidesPackage{pxjahyper}[2019/06/20 v0.3e]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -100,6 +100,19 @@
     \csname iftrue\endcsname
   \pxhy@hy@unicodetrue
 \fi
+\AtBeginDocument{%
+  \@tempswafalse
+  \expandafter\ifx\csname ifHy@unicode\expandafter\endcsname
+      \csname iftrue\endcsname
+    \@tempswatrue
+  \fi
+  \ifnum0\ifpxhy@hy@unicode1\fi\if@tempswa1\fi=1
+    \PackageError\pxhy@pkgname
+     {You must not change the encoding setting (e.g.\MessageBreak
+      'unicode) of hyperref after pxjahyper is loaded}%
+     {\@ehc}%
+  \fi
+}
 
 %% Check hyperref driver.
 \ifx\pxhy@driver\@undefined
