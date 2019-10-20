@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2019/06/20 v0.3e]
+\ProvidesPackage{pxjahyper}[2019/10/20 v0.4-pre]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -30,6 +30,7 @@
 %% globals
 \newif\ifpxhy@ptex
 \newif\ifpxhy@uptex
+\newif\ifpxhy@etex
 \let\pxhy@jcode\@undefined
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
@@ -40,6 +41,7 @@
 \let\pxhy@driver\@undefined
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
+\newif\ifpxhy@otfcid
 
 %--------------------------------------- Package options
 
@@ -82,8 +84,14 @@
 \DeclareOption{nojacommentline}{%
   \pxhy@jacommentlinefalse
 }
+\DeclareOption{otfcid}{%
+  \pxhy@otfcidtrue
+}
+\DeclareOption{nootfcid}{%
+  \pxhy@otfcidfalse
+}
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,jacommentline%
+  auto,tounicode,noout2uni,jacommentline,otfcid%
 }
 \ProcessOptions*
 
@@ -125,11 +133,13 @@
 \fi
 
 %% Check the engine.
+\@onlypreamble\pxhy@check
 \def\pxhy@check#1#2{%
   \edef\pxhy@tmpa{\string#1}%
   \edef\pxhy@tmpb{\meaning#1}%
   \ifx\pxhy@tmpa\pxhy@tmpb #2\fi
 }
+\pxhy@check\eTeXversion{\pxhy@etextrue}
 \pxhy@check\kanjiskip{\pxhy@ptextrue}
 \pxhy@check\forcecjktoken{\pxhy@uptextrue}
 \ifpxhy@ptex\else
@@ -196,8 +206,14 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 %--------------------------------------- Helpers
 
-%% pxhy@end
+%% packages
+\ifpxhy@etex
+  \RequirePackage{etoolbox}[2011/01/03]%v2.1
+\fi
+
+%% unique tokens
 \def\pxhy@end{\pxhy@end@}
+\let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@out@special{<text>}
 \def\pxhy@out@special#1{%
@@ -401,6 +417,80 @@ pxhy@driver = \the\pxhy@driver^^J%
   %Note: if out2uni is off then \Ux remains undefined.
 \fi\fi                          %</upTeX>
 
+%--------------------------------------- Support for 'otfcid'
+\ifpxhy@otfcid
+
+%% variables
+\@onlypreamble\pxhy@otfcid@disabled
+\let\pxhy@otfcid@disabled\relax
+
+%% preparation
+\ifpxhy@etex
+  % check if bxjatoucs is available
+  \IfFileExists{bxjatoucs.sty}{%
+    \let\bxjatoucsCheckAvail=t
+    \RequirePackage{bxjatoucs}[]
+    \undef\bxjatoucsCheckAvail
+  }{}
+  \ifundef\bxjaCidToUcs{%
+    \def\pxhy@otfcid@disabled{%
+      package 'bxjatoucs' is unavailable%
+    }%
+  }{}
+\else
+  \def\pxhy@otfcid@disabled{%
+    e-TeX extension is unavailable%
+  }
+\fi
+
+%% \pxhy@CID{<cid>}
+\def\pxhy@CID#1{%
+  \expandafter\expandafter\expandafter\pxhy@cid@aux
+      \bxjaCidToUcsHex{#1}\pxhy@mk{\detokenize{#1}}%
+}
+%% \pxhy@fast@CID{<cid>}
+\def\pxhy@fast@CID#1{%
+  \expandafter\expandafter\expandafter\pxhy@cid@aux
+      \bxjaFastCidToUcsHex{#1}\pxhy@mk{\number#1}%
+}
+\def\pxhy@cid@aux#1\pxhy@mk#2{%
+  \ifnum"#1>\z@
+    \pxhy@uchex{#1}%
+  \else
+    \@nameuse{CID+#2}%
+  \fi
+}
+
+%% \pxhy@dispatch@otfcid
+\def\pxhy@dispatch@otfcid{%
+  \pdfstringdefDisableCommands{%
+    \let\CID\pxhy@CID
+  }%
+  \ifx\ajSnowman\@undefined\else % ajmacros is loaded
+    \makeatletter
+    \InputIfFileExists{pxjahyper-ajm.def}{%
+      \PackageInfo\pxhy@pkgname
+       {Loaded 'pxjahyper-ajm.def'\@gobble}%
+    }{}%
+    \makeatother
+  \fi
+}
+
+%% begin-document hook
+\AtBeginDocument{%
+  \@ifpackageloaded{otf}{%
+    \ifx\pxhy@otfcid@disabled\relax % available!
+      \pxhy@dispatch@otfcid
+    \else
+      \PackageWarningNoLine\pxhy@pkgname
+       {Option 'otfcid' is disabled, because\MessageBreak
+        \pxhy@otfcid@disabled}%
+      \pxhy@otfcidfalse
+    \fi
+  }{}%
+}
+
+\fi
 %--------------------------------------- Redefine text commands for PD1
 
 \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>

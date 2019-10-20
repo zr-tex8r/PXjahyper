@@ -1,0 +1,772 @@
+%%
+%% This is file 'pxjahyper-ajm.def'.
+%% 
+%% Copyright (c) 2019 Takayuki YATO (aka. "ZR")
+%%   GitHub:   https://github.com/zr-tex8r
+%%   Twitter:  @zr_tex8r
+%%
+%% This package is distributed under the MIT License.
+%%
+%% このファイルは日本語文字を含みます.
+
+%% package declaration
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesFile{pxjahyper-ajm.def}[2019/10/20 v0.4-pre]
+
+%% avoid multiple loading
+\csname pxjahyperajmLoaded\endcsname
+\def\pxjahyperajmLoaded{\endinput}
+%% force UTF-8
+\ifx\epTeXinputencoding\@undefined\else
+  \epTeXinputencoding utf8
+\fi
+
+%--------------------------------------- general
+
+% Note: Here 'etoolbox' is already loaded.
+
+%% check engine
+\ifx\numexpr\@undefined \endinput \fi
+
+%% \pxhy@macro@name@list
+% The \do-list of the name of macros to be redefined.
+\let\pxhy@macro@name@list\@empty
+
+%% \pxhy@ : the prefix
+\def\pxhy@{pxhy@aj@@}
+
+%% \pxhy@cond\ifXXX...\fi{<yes>}{<no>}
+\@gobbletwo\if\if \def\pxhy@cond#1\fi{%
+  #1\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+}
+
+%% \pxhy@cond@both\ifXXX...\fi\ifYYY...\fi{<yes>}{<no>}
+% Checks whether \ifXXX and \ifYYY both hold.
+\@gobbletwo\if\if\@gobbletwo\if\if \def\pxhy@cond@both#1\fi#2\fi{%
+  \bxju@cond{\if #1#2T\else F\fi\else F\fi T}\fi
+}
+
+%% \pxhy@if@star{<varient>}{<normal>}
+% Expands to <varient> if followed by *, otherwise to <normal>.
+\def\pxhy@if@star#1#2#3{% #3=next-arg
+  \expandafter\pxhy@if@star@a\detokenize{#3}@{#1}*@{#2{#3}}\pxhy@mk
+}
+\def\pxhy@if@star@a#1*@#2#3\pxhy@mk{#2}
+
+%% \pxhy@if@plus{<varient>}{<normal>}
+% Expands to <varient> if followed by +, otherwise to <normal>.
+\def\pxhy@if@plus#1#2#3{% #3=next-arg
+  \expandafter\pxhy@if@plus@a\detokenize{#3}@{#1}+@{#2{#3}}\pxhy@mk
+}
+\def\pxhy@if@plus@a#1+@#2#3\pxhy@mk{#2}
+
+%% \pxhy@shift{<x>}{<y>}
+% Expands to \pxhy@fast@CID with the value of x+y.
+\def\pxhy@shift#1#2{%
+  \expandafter\pxhy@shift@a\the\numexpr(#1)+(#2)\pxhy@mk
+}
+\def\pxhy@shift@a#1\pxhy@mk{%
+  \pxhy@fast@CID{#1}%
+}
+
+%% \pxhy@numeral{<number>}
+% Expands to the Western numeral.
+\def\pxhy@numeral#1{%
+  \expandafter\pxhy@numeral@a\number#1\pxhy@mk
+}% \pxhy@mk ensures termination 
+\def\pxhy@numeral@a#1\pxhy@mk{#1}
+
+%% \pxhy@two@digits{<number>}
+% Expands to the Western numeral.
+\def\pxhy@two@digits#1{%
+  \expandafter\pxhy@two@digits@a\number#1\pxhy@mk
+}% \pxhy@mk ensures termination 
+\def\pxhy@two@digits@a#1\pxhy@mk{%
+  \ifnum#1<10 0\fi #1%
+}
+
+%--------------------------------------- kanji numerals
+
+%% \pxhy@kdigit{<digit>}
+\def\pxhy@kdigit#1{%
+  \ifcase#1〇\or 一\or 二\or 三\or 四\or 五\or 六\or 七\or 八\or 九\fi
+}
+
+%% \pxhy@each@digit{<number>}\CScont
+% Expands to \CScont{<ten-digit>}{<one-digit>}.
+\def\pxhy@each@digit#1#2{%
+  \ifnum#1>\m@ne \ifnum#1<100
+    \expandafter\pxhy@each@digit@a\number#1..\pxhy@mk{#2}%
+  \fi\fi
+}
+\def\pxhy@each@digit@a#1#2#3\pxhy@mk#4{%
+  \if.#2#40#1\else#4#1#2\fi
+}
+
+%% \pxhy@knumeral{<number>}
+% Expands to the kanji numeral according to Japanese reading.
+\def\pxhy@knumeral#1{%
+  \pxhy@each@digit{#1}\pxhy@knumeral@a
+}
+\def\pxhy@knumeral@a#1#2{%
+  \ifnum#1#2=\z@ \pxhy@kdigit0%
+  \else
+    \ifcase#1 \or 十\else \pxhy@kdigit#1十\fi
+    \ifcase#2 \else \pxhy@kdigit#2\fi
+  \fi
+}
+
+%--------------------------------------- \pdfstringdef hook
+
+\pdfstringdefDisableCommands{%
+  % invoke the redefinitions
+  \def\do#1{\expandafter\let\csname aj#1\expandafter\endcsname
+      \csname \pxhy@#1\endcsname}%
+  \pxhy@macro@name@list
+}
+%% annihilate the ajmacros's own process
+\let\ajRedefine@ajCommands\relax
+
+%=======================================
+% Macro Definitions
+\begingroup % entering a big group
+%--------------------------------------- helpers
+
+%% prepare
+\csuse{forcecjktoken}
+
+%% shorthands
+\catcode`\`=\active \let`\noexpand
+\def\@{\unexpanded}
+\def\@@{\expandonce}
+\def\CID{\pxhy@CID}
+
+%% \#{<number-expr>}
+% Expands to the value of the expression.
+\def\##1{\the\numexpr#1\relax\space}
+
+%% \pxhy@def{<macro-name>}...
+\def\pxhy@def#1{\csxdef{\pxhy@#1}}
+
+%% \pxhy@DeclareMacro{<macro-name>}...{<body>}
+% Declares (with \xdef) the pdfstring version of the aj-macro
+% \[aj<macro-name>].
+\def\pxhy@DeclareMacro#1{%
+  \xappto\pxhy@macro@name@list{`\do{#1}}%
+  \pxhy@def{#1}%
+}
+
+%% \pxhy@DeclareMacroVar{<macro-name>}...{<body-n>}{<body-v>}
+% Variant of \pxhy@DeclareMacro, where the *-variant of the macro
+% is declared. The parameter '...' will be shared with both forms.
+\def\pxhy@DeclareMacroVar#1{%
+  \xappto\pxhy@macro@name@list{`\do{#1}}%
+  \edef\pxhy@next{{\@nameuse{\pxhy@#1}}%
+      {\@nameuse{\pxhy@#1@N}}{\@nameuse{\pxhy@#1@V}}}%
+  \expandafter\pxhy@decl@macro@var@a\pxhy@next
+}
+\def\pxhy@decl@macro@var@a#1#2#3#4#{%
+  \gdef#1{\pxhy@if@star#3#2}%
+  \toks@{\xdef#3#4}\def\pxhy@next{\the\toks@}%
+  \afterassignment\pxhy@next \xdef#2#4%
+}
+
+%% \pxhy@DeclareAlias{<name1>}{<name2>}
+% Defines an alies.
+\def\pxhy@DeclareAlias#1#2{%
+  \xappto\pxhy@macro@name@list{`\do{#1}}%
+  \global\csletcs{\pxhy@#1}{\pxhy@#2}%
+}
+
+%% \pxhy@range{<ob-value>}{<limit>/<value>,...}
+% Expands to the code of a range switch.
+\def\pxhy@range#1#2{%
+  \pxhy@range@a{#1}#2/#1,*/*,\pxhy@mk
+}
+\def\pxhy@range@a#1#2/#3,#4\pxhy@mk{%
+  \ifstrempty{#4}{#1}{%else
+    `\ifnum##1<\#{#2}#1%
+    `\else\pxhy@range@a{#3}#4\pxhy@mk`\fi}%
+}
+
+%% \pxhy@rshift{<limit>/<shift>,...}
+% \pxhy@shift with a range switch.
+\def\pxhy@rshift#1{%
+  \pxhy@shift{##1}{\pxhy@range{-1000}{#1}}%
+}
+
+%% \pxhy@twirange{<shift1>}{<shift2>}
+% Special kind of range switch, used in \ajKaku etc.
+\def\pxhy@twirange#1#2{%
+  `\ifnum##1<\#{0}`\else`\ifnum##1<\#{10}\pxhy@shift{##1*2}{#1}%
+  `\else`\ifnum##1<\#{101}\pxhy@shift{##1}{#2}%
+  `\fi`\fi`\fi
+}
+
+%% \pxhy@fallback{<lbound>}{<fb-lbound>}{<ubound>}{<normal>}{<fallback>}
+\def\pxhy@fallback#1#2#3#4#5{%
+  `\ifnum##1<\#{#1}`\else`\ifnum##1>\#{#3}`\else
+    \ifnum\#{#1}=\#{#2}#5%
+    \else `\ifnum##1<\#{#2}#4`\else#5`\fi
+    \fi
+  `\fi`\fi
+}
+
+%% freeze 'em
+\let\UTF\relax
+\let\pxhy@CID\relax
+\let\pxhy@fast@CID\relax
+\let\pxhy@if@star\relax
+\let\pxhy@if@plus\relax
+\let\pxhy@shift\relax
+\let\pxhy@numeral\relax
+\let\pxhy@two@digits\relax
+\let\pxhy@knumeral\relax
+
+%--------------------------------------- the redefinitions
+
+% A text command invoked in PDF-sttings must be "string-OK".
+% Here a text command is "string-OK" if both:
+% - fully expandable, and
+% - comprised only of "Unicode-OK" glyphs.
+% Here a glyph is "unicode-OK" if either:
+% - representable as a single Unicode character, or
+% - well-substituted with a single Unicode character.
+% When the original definition of an aj-macro command is not string-OK
+% (marked as <!>), then the command must be redefeind.
+
+%%<!> \ajTsumesuji<var>{<string>}
+%%<!> \ajTsumesuji*{<string>}
+% Simply expands to the string.
+\pxhy@DeclareMacroVar{Tsumesuji}#1#2{#2}{}
+% \ajTsumesuji* takes only one argument.
+\pxhy@def{Tsumesuji@V}#1{#1}
+
+%-----------------------
+% Enclosed letters
+
+% None of the aj-macros for enclosed letters are fully expandable,
+% so they all must be redefined.
+% The glyphs for enclosed alphabet and kana letters are Unicode-OK
+% (\ajMaruKata{1} is U+32d0(㋐), and \ajMaruHira{1} fallbacks to plain
+% あ letter), but some of those for enclosed numbers are not Unicode-OK
+% (\ajMaru{51} does not have a good fallback), and thus should give an
+% alternative fallback string (\ajMaru{51}→“51”).
+% Note: for some enclosed numbers, glyphs with different enclosure are
+% used as fallback (e.g. \ajKuroMaru{21}→“㉑)”.
+
+%%<!> \ajMaru[*]{<number>}
+\pxhy@DeclareMacroVar{Maru}#1{%N
+  \pxhy@fallback{0}{51}{100}{%
+    \pxhy@rshift{0/8224,1/7554,21/8070,22/8080,32/10212,101}%
+  }{\pxhy@numeral{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@rshift{0/10234,10/7554,21/8070,22/8080,32/10212,101}%
+  }{`\ajMaru{#1}}%
+}
+%%<!> \ajKuroMaru[*]{<number>}
+\pxhy@DeclareMacroVar{KuroMaru}#1{%N
+  \pxhy@fallback{0}{21}{100}{%
+    \pxhy@rshift{0/10503,1/8285,10/10504,101}%
+  }{`\ajMaru{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@rshift{0/10504,101}%
+  }{`\ajKuroMaru{#1}}%
+}
+%%<!> \ajKaku[*]{<number>}
+\pxhy@DeclareMacroVar{Kaku}#1{%N
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{10764}{10774}%
+  }{`\ajMaru{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{10765}{10774}%
+  }{`\ajMaru{#1}}%
+}
+%%<!> \ajKuroKaku[*]{<number>}
+\pxhy@DeclareMacroVar{KuroKaku}#1{%N
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{11037}{11047}%
+  }{`\ajMaru{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{11038}{11047}%
+  }{`\ajMaru{#1}}%
+}
+%%<!> \ajMaruKaku[*]{<number>}
+\pxhy@DeclareMacroVar{MaruKaku}#1{%N
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{11307}{11317}%
+  }{`\ajMaru{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+  `\ajMaru{#1}%fallback
+    \pxhy@twirange{11308}{11317}%
+  }{`\ajMaru{#1}}%
+}
+%%<!> \ajKuroMaruKaku[*]{<number>}
+\pxhy@DeclareMacroVar{KuroMaruKaku}#1{%N
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{11576}{11586}%
+  }{`\ajMaru{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@twirange{11577}{11586}%
+  }{`\ajMaru{#1}}%
+}
+%%<!> \ajKakko[*]{<number>}
+\pxhy@DeclareMacroVar{Kakko}#1{%N
+  \pxhy@fallback{0}{21}{100}{%
+    \pxhy@rshift{0/8227,1/8070,21/9873,101}%
+  }{(\pxhy@numeral{#1})}%
+}{%V
+  \pxhy@fallback{0}{0}{100}{%
+    \pxhy@rshift{0/9884,10/8070,21/9873,101}%
+  }{`\ajKakko{#1}}%
+}
+%%<!> \ajRoman[*]{<number>}
+\pxhy@DeclareMacroVar{Roman}#1{%N
+  \pxhy@fallback{1}{13}{15}{%
+    \pxhy@rshift{1/7574,11/8214,13/8282,16}%
+  }{`\@Roman{#1}}%
+}{%V
+  \pxhy@fallback{1}{1}{15}{%
+    \pxhy@rshift{1/7574,4/9879,5/7574,11/8214,13/8282,16}%
+  }{`\ifnum#1=\#{4}IIII`\else`\ajRoman{#1}`\fi}%
+}
+%%<!> \ajroman{<number>}
+\pxhy@DeclareMacro{roman}#1{%
+  \pxhy@fallback{1}{13}{15}{%
+    \pxhy@rshift{1/8091,11/8287,16}%
+  }{`\@roman{#1}}%
+}
+%%<!> \ajPeriod{<number>}
+\pxhy@DeclareMacro{Period}#1{%
+  \pxhy@fallback{0}{1}{11}{%
+    0.%
+  }{\pxhy@rshift{0/8061,10/20577,12}}%
+}
+%%<!> \ajKakkoYobi{<number>}
+\pxhy@DeclareMacro{KakkoYobi}#1{\pxhy@rshift{1/8196,10}}
+%%<!> \ajKakkoroman{<number>}
+\pxhy@DeclareMacro{Kakkoroman}#1{%
+  \pxhy@fallback{1}{1}{15}{%
+    \pxhy@rshift{1/9973,16}%
+  }{(`\ajroman{#1})}%
+}
+%%<!> \ajKakkoRoman{<number>}
+\pxhy@DeclareMacro{KakkoRoman}#1{%
+  \pxhy@fallback{1}{1}{15}{%
+    \pxhy@rshift{1/9988,16}%
+  }{(`\ajRoman{#1})}%
+}
+%%<!> \ajKakkoalph{<number>}
+\pxhy@DeclareMacro{Kakkoalph}#1{\pxhy@rshift{1/8111,27}}
+%%<!> \ajKakkoAlph{<number>}
+\pxhy@DeclareMacro{KakkoAlph}#1{\pxhy@rshift{1/10003,27}}
+%%<!> \ajKakkoHira{<number>}
+\pxhy@DeclareMacro{KakkoHira}#1{%
+  \pxhy@fallback{1}{1}{48}{%
+    \pxhy@rshift{1/10029,49}%
+  }{(\pxhy@rshift{1/10029,49})}% with parens
+}
+%%<!> \ajKakkoKata{<number>}
+\pxhy@DeclareMacro{KakkoKata}#1{%
+  \pxhy@fallback{1}{1}{48}{%
+    \pxhy@rshift{1/10077,49}%
+  }{(\pxhy@rshift{1/10077,49})}% with parens
+}
+%%<!> \ajKakkoKansuji{<number>}
+\pxhy@DeclareMacro{KakkoKansuji}#1{%
+  \pxhy@fallback{1}{11}{20}{%
+    \pxhy@rshift{1/10125,21}%
+  }{(\pxhy@knumeral{#1})}%
+}
+%%<!> \ajMaruKansuji{<number>}
+\pxhy@DeclareMacro{MaruKansuji}#1{\pxhy@rshift{1/10460,11}}
+%%<!> \ajMarualph{<number>}
+\pxhy@DeclareMacro{Marualph}#1{\pxhy@rshift{1/10312,27}}
+%%<!> \ajMaruAlph{<number>}
+\pxhy@DeclareMacro{MaruAlph}#1{\pxhy@rshift{1/10338,27}}
+%%<!> \ajMaruHira{<number>}
+\pxhy@DeclareMacro{MaruHira}#1{\pxhy@rshift{1/10364,49}}
+%%<!> \ajMaruKata{<number>}
+\pxhy@DeclareMacro{MaruKata}#1{\pxhy@rshift{1/10412,49}}
+%%<!> \ajMaruYobi{<number>}
+\pxhy@DeclareMacro{MaruYobi}#1{%
+  \pxhy@rshift{1/10470,8/10484,9/10478,10}%
+}
+%%<!> \ajKuroMarualph{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMarualph}#1{`\ajMarualph{#1}}
+%%<!> \ajKuroMaruAlph{<number>}
+\pxhy@DeclareMacro{KuroMaruAlph}#1{\pxhy@rshift{1/10630,27}}
+%%<!> \ajKuroMaruHira{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruHira}#1{`\ajMaruHira{#1}}
+%%<!> \ajKuroMaruKata{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruKata}#1{`\ajMaruKata{#1}}
+%%<!> \ajKuroMaruYobi{<number>} : Fallback.
+% fallback to \ajKakuYobi, which is simpler.
+\pxhy@DeclareMacro{KuroMaruYobi}#1{`\ajKakuYobi{#1}}
+%%<!> \ajKakualph{<number>} : Fallback.
+\pxhy@DeclareMacro{Kakualph}#1{`\ajMarualph{#1}}
+%%<!> \ajKakuAlph{<number>}
+\pxhy@DeclareMacro{KakuAlph}#1{\pxhy@rshift{1/10900,27}}
+%%<!> \ajKakuHira{<number>} : Fallback.
+\pxhy@DeclareMacro{KakuHira}#1{`\ajMaruHira{#1}}
+%%<!> \ajKakuKata{<number>} : Fallback.
+\pxhy@DeclareMacro{KakuKata}#1{`\ajMaruKata{#1}}
+%%<!> \ajKakuYobi{<number>}
+\pxhy@DeclareMacro{KakuYobi}#1{\pxhy@rshift{1/11022,8}}
+%%<!> \ajKuroKakualph{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroKakualph}#1{`\ajMarualph{#1}}
+%%<!> \ajKuroKakuAlph{<number>}
+\pxhy@DeclareMacro{KuroKakuAlph}#1{\pxhy@rshift{1/11173,27}}
+%%<!> \ajKuroKakuHira{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroKakuHira}#1{`\ajMaruHira{#1}}
+%%<!> \ajKuroKakuKata{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroKakuKata}#1{`\ajMaruKata{#1}}
+%%<!> \ajKuroKakuYobi{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroKakuYobi}#1{`\ajKakuYobi{#1}}
+%%<!> \ajMaruKakualph{<number>} : Fallback.
+\pxhy@DeclareMacro{MaruKakualph}#1{`\ajMarualph{#1}}
+%%<!> \ajMaruKakuAlph{<number>}
+\pxhy@DeclareMacro{MaruKakuAlph}#1{\pxhy@rshift{1/11443,27}}
+%%<!> \ajMaruKakuHira{<number>} : Fallback.
+\pxhy@DeclareMacro{MaruKakuHira}#1{`\ajMaruHira{#1}}
+%%<!> \ajMaruKakuKata{<number>} : Fallback.
+\pxhy@DeclareMacro{MaruKakuKata}#1{`\ajMaruKata{#1}}
+%%<!> \ajMaruKakuYobi{<number>} : Fallback.
+\pxhy@DeclareMacro{MaruKakuYobi}#1{`\ajKakuYobi{#1}}
+%%<!> \ajKuroMaruKakualph{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruKakualph}#1{`\ajMarualph{#1}}
+%%<!> \ajKuroMaruKakuAlph{<number>}
+\pxhy@DeclareMacro{KuroMaruKakuAlph}#1{\pxhy@rshift{1/11712,27}}
+%%<!> \ajKuroMaruKakuHira{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruKakuHira}#1{`\ajMaruHira{#1}}
+%%<!> \ajKuroMaruKakuKata{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruKakuKata}#1{`\ajMaruKata{#1}}
+%%<!> \ajKuroMaruKakuYobi{<number>} : Fallback.
+\pxhy@DeclareMacro{KuroMaruKakuYobi}#1{`\ajKakuYobi{#1}}
+%%<!> \ajNijuMaru{<number>}
+\pxhy@DeclareMacro{NijuMaru}#1{\pxhy@rshift{1/16222,11}}
+%%<!> \ajRecycle{<number>}
+\pxhy@DeclareMacro{Recycle}#1{\pxhy@rshift{0/16314,12}}
+%%<!> \ajHasenKakuAlph{<number>}
+\pxhy@DeclareMacro{HasenKakuAlph}#1{\pxhy@rshift{1/20496,7}}
+%%<!> \ajCross{<number>}
+\pxhy@DeclareMacro{Cross}#1{%
+  \pxhy@fallback{0}{0}{9}{%
+    \pxhy@rshift{0/20523,10}%
+  }{\pxhy@numeral{#1}\UTF{00D7}}%
+}
+%%<!> \ajSlanted[*]{<number>}
+\pxhy@DeclareMacroVar{Slanted}#1{%N
+  \pxhy@fallback{0}{0}{59}{%
+    \pxhy@rshift{0/9460,10/20589,60}%
+  }{\pxhy@numeral{#1}}%
+}{%V
+  \pxhy@fallback{0}{0}{59}{%
+    \pxhy@rshift{0/20589,60}%
+  }{\pxhy@two@digits{#1}}%
+}
+%%<!> \ajApostrophe{<number>}
+%%<!> \ajYear{<number>} (alias)
+\pxhy@DeclareMacro{Apostrophe}#1{%
+  \pxhy@fallback{0}{0}{99}{%
+    \pxhy@rshift{0/20649,100}%
+  }{\UTF{2019}\pxhy@two@digits{#1}}%
+}
+\pxhy@DeclareAlias{Year}{Apostrophe}
+%%<!> \ajSquareMark[*]{<number>}
+% Note: +-variant is unsupported.
+\pxhy@DeclareMacroVar{SquareMark}#1{%N
+  \pxhy@rshift{1/12229,13}%
+}{%V
+  \pxhy@rshift{1/12241,10}%
+}
+%%<!> \ajHishi{<number>}
+\pxhy@DeclareMacro{Hishi}#1{\pxhy@rshift{1/12256,5}}
+
+%-----------------------
+
+% The choice of numerals (Western or kanji) depends on the rendering
+% of the original definition in yoko direction.
+
+%%<!> \ajTsumekakko{<number>}
+%%<!> \ajTumekakko{<number>} (alias)
+% Expands to "(number)".
+\pxhy@DeclareMacro{Tsumekakko}#1{%
+  (\pxhy@numeral{#1})%
+}
+\pxhy@DeclareAlias{Tumekakko}{Tsumekakko}
+
+%%<!> \ajNenrei<var>{<number>}
+\pxhy@DeclareMacro{Nenrei}#1{%
+  `\csname pxhy@ajNenrei/`\number#1`\endcsname
+}
+\csgdef{pxhy@ajNenrei/1}#1{%
+  (\pxhy@numeral{#1}\ifnum#1<10 つ\fi)%
+}
+\csgdef{pxhy@ajNenrei/2}#1{%
+  (\pxhy@numeral{#1}才)%
+}
+\csgdef{pxhy@ajNenrei/3}#1{% FIXME: the original is right?
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varA つ})%
+}
+\csgdef{pxhy@ajNenrei/4}#1{%
+  (\pxhy@knumeral{#1}才)%
+}
+
+%%<!> \ajnenrei<var>{<number>}
+\pxhy@DeclareMacro{nenrei}#1{%
+  `\csname pxhy@ajnenrei/`\number#1`\endcsname
+}
+\csgdef{pxhy@ajnenrei/1}#1{%
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varA つ})%
+}
+\csgdef{pxhy@ajnenrei/2}#1{%
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varB 才})%
+}
+\csgdef{pxhy@ajnenrei/3}#1{% FIXME: the original is right?
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varA ツ})%
+}
+\csgdef{pxhy@ajnenrei/4}#1{%
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varB コ})%
+}
+
+%%<!> \ajKosu{<number>}
+\pxhy@DeclareMacro{Kosu}#1{%
+  `\ajnenrei4{#1}%
+}
+
+%% some special kanji numeral forms
+\gdef\pxhy@knumeral@varA#1#2#3{%<tsu><ten><one>
+  % 8→八つ, 10→一〇, 16→一六, 20→二〇, 32→三二
+  \if0#2\pxhy@kdigit#3#1\else\pxhy@kdigit#2\pxhy@kdigit#3\fi
+}
+\gdef\pxhy@knumeral@varB#1#2#3{%<counter><ten><one>
+  % 8→八才, 10→十才, 16→十六, 20→二十, 32→三二
+  \ifcase#2 #2#1%
+  \or 十\ifcase#3 #1\else \pxhy@kdigit#3\fi
+  \else \pxhy@kdigit#2\ifcase#3 十\else \pxhy@kdigit#3\fi
+  \fi
+}
+
+%%<!> \ajFrac[*]{<numerator>}{<denominator>}
+\pxhy@DeclareMacroVar{Frac}#1#2{%N
+  `\pxhy@ajFrac{\pxhy@numeral{#1}}{\pxhy@numeral{#2}}%
+}{%V
+  `\pxhy@ajFrac{\pxhy@numeral{#1}}{\pxhy@numeral{#2}}%
+}
+\gdef\pxhy@ajFrac#1#2{%
+  \ifcsdef{pxhy@ucs@frac/#1/#2}{%
+    \csuse{pxhy@ucs@frac/#1/#2}%
+  }{#1/#2}%
+}
+%% \[pxhy@ucs@frac/<n>/<d>]
+% Alternative definitions for fractions.
+\def\do#1#2{\csgdef{pxhy@ucs@frac/#1}{\UTF{#2}}}
+\do{1/4}{00BC}
+\do{1/2}{00BD}
+\do{3/4}{00BE}
+\do{1/7}{2150}
+\do{1/9}{2151}
+\do{1/10}{2152}
+\do{1/3}{2153}
+\do{2/3}{2154}
+\do{1/5}{2155}
+\do{2/5}{2156}
+\do{3/5}{2157}
+\do{4/5}{2158}
+\do{1/6}{2159}
+\do{5/6}{215A}
+\do{1/8}{215B}
+\do{3/8}{215C}
+\do{5/8}{215D}
+\do{7/8}{215E}
+\do{0/3}{2189}
+
+%%<!> \aj半角{<string>}
+% Simply expands to the string.
+\pxhy@DeclareMacro{半角}#1{#1}{}
+
+%%<OK> \○ / \● / \□ / \■ / \◇ / \◆
+% Expands to \ajLig{} or \@ajNumber.
+% \@ajNumber{CMD}{<n>} seems to expand to \ajCMD{<n>}.
+
+%%<OK> \△ / \▽ / \゛ / \゜ / \！
+% Expands to \ajLig{}.
+
+%%<OK> \ajPICT{<name>}
+% Expands to \CID{}.
+
+%%<OK> \ajArrow{<name>}
+% Expands to \CID{}.
+
+%%<!> \ajKunten{<name>}
+% \ajKunten{?} (for single letters) expands to \CID{} and is string-OK.
+% \ajKunten{?｜}, \ajKunten{｜?}a and \ajKunten{?レ} need to be
+% redefined.
+\@tfor\x:={一}{上}{甲}{天}\do{% ?レ
+  \pxhy@DeclareMacro{訓点\x レ}{`\ajKunten{\x}`\ajKunten{レ}}%
+}
+\@tfor\x:={二}{三}{四}{中}{下}{乙}{丙}{丁}{地}{人}\do{% ?｜ ｜?
+  \pxhy@DeclareMacro{訓点\x ｜}{`\ajKunten{\x}\UTF{2013}}%
+  \pxhy@DeclareMacro{訓点｜\x }{`\ajKunten{\x}\UTF{2013}}%
+}
+\pxhy@DeclareMacro{訓点　｜}{\UTF{2013}}%
+\pxhy@DeclareMacro{訓点｜　}{\UTF{2013}}%
+
+%%<OK> \ajVar{<name>}
+% Expands to \CID{} or \UTF{}.
+
+%%<??> \ajLeader
+
+%%<??> \ajQuote
+
+%%<OK> Miscenallneous \ajXxx symbols
+% Most of them are string-OK; The exceptions are below.
+
+%% ad-hoc redefinitions
+\pxhy@DeclareMacro{DKunoji}{\UTF{3032}}
+\pxhy@DeclareMacro{KunojiwithBou}{\UTF{3032}}
+\pxhy@DeclareMacro{Kunoji}{\UTF{3031}}
+\pxhy@DeclareMacro{KunojiwithBou}{\UTF{3031}}
+\pxhy@DeclareMacro{Yusuriten}{\CID{16193}}
+\pxhy@DeclareMacro{varNinoji}{\CID{12107}}
+
+%----------------------
+% The \ajLig command
+
+%% \[pxhy@uok/<lig>]
+% If defined, then \ajLig{<lig>} is Unicode-OK.
+% Note: Baware of unification. For example, \ajLig{No.} and \ajLig{No}
+% can both be kind of U+2116(№), but probably \ajLig{AM} cannot be
+% kind of U+33C2(㏂).
+\@tfor\x:=%
+  {!!}{!!*}{!*}{!?}{!?*}{'S}{?!}{??}{F}{FAX}{GB}{HP}{Hz}{JIS}{K.K.}{KB}%
+  {MB}{No.}{No}{PR}{TEL}{Tel}{a.m.}{a/c}{c/o}{cal}{cc}{cm}{cm2}{cm3}{dB}%
+  {dl}{dl*}{euro}{g}{hPa}{in}{kcal}{kg}{kl}{kl*}{km}{km2}{km3}{l}{l*}{m}%
+  {m2}{m3}{mb}{mg}{mho}{microg}{microm}{micros}{ml}{ml*}{mm}{mm2}{mm3}{ms}%
+  {ns}{p.m.}{pH}{ppm}{ps}{tel}{tm}{◇HV}{◇MV}{◇News}{◇SS}{より}%
+  {アパート}{アルファ}{アンペア}{アール*}{アール}{イニング}{インチ}%
+  {インチ*}{ウォン}{エスクード}{エーカー}{オンス}{オーム}{カイリ}%
+  {カラット}{カロリー}{ガロン}{ガンマ}{キュリー}{キロ}{キログラム}%
+  {キロメートル}{キロワット}{ギガ}{ギニー}{ギルダー}{クルゼイロ}{クローネ}%
+  {グラム}{グラム*}{グラムトン}{ケース}{コト}{コルナ}{コーポ}{コーポ*}%
+  {サイクル}{サンチーム}{シリング}{センチ}{センチ*}{セント}{セント*}%
+  {ダース}{デシ}{トン}{ドル}{ナノ}{ノット}{ハイツ}{ハイツ*}{バーレル}%
+  {パーセント}{ビル}{ピアストル}{ピクル}{ピコ}{ファラッド}{フィート}%
+  {フラン}{ブッシェル}{ヘクタール}{ヘルツ}{ヘルツ*}{ベータ}{ペソ}{ペニヒ}%
+  {ペンス}{ページ}{ページ*}{ホン}{ホール}{ホーン}{ホーン*}{ボルト}%
+  {ポイント}{ポンド}{マイクロ}{マイル}{マッハ}{マルク}{マンション}%
+  {ミクロン}{ミリ}{ミリバール}{メガ}{メガトン}{メートル}{ヤード}{ヤード*}%
+  {ヤール}{ユアン}{リットル}{リラ}{ルピー}{ルーブル}{レム}{レントゲン}%
+  {ワット}{ワット*}{令和}{升}{大正}{平成}{明治}{昭和}{株式会社}%
+\do{\global\cslet{pxhy@uok/\x}{t}}
+
+% Note: Ligatures no*, euro*, mho*, ohm* are bad (proportional).
+
+%% \[pxhy@uokh/<char>]
+% If defined, then \ajLig{<char>?} is Unicode-OK, where '?' is
+% an arbitrary single character.
+\@tfor\x:=%
+  {■}{□}{△}{▽}{◆}{◇}{○}{●}
+\do{\global\cslet{pxhy@uokh/\x}{t}}
+
+%% ad-hoc redefinitions
+\def\do#1#2{\pxhy@DeclareMacro{Lig#1}{#2}%
+  \global\cslet{pxhy@uok/#1}{t}}
+\do{う゛}{\UTF{3094}}
+\do{か゜}{か\UTF{309A}}
+\do{き゜}{き\UTF{309A}}
+\do{く゜}{く\UTF{309A}}
+\do{け゜}{け\UTF{309A}}
+\do{こ゜}{こ\UTF{309A}}
+\do{カ゜}{カ\UTF{309A}}
+\do{キ゜}{キ\UTF{309A}}
+\do{ク゜}{ク\UTF{309A}}
+\do{ケ゜}{ケ\UTF{309A}}
+\do{コ゜}{コ\UTF{309A}}
+\do{セ゜}{セ\UTF{309A}}
+\do{ツ゜}{ツ\UTF{309A}}
+\do{ト゜}{ト\UTF{309A}}
+\do{ワ゛}{\UTF{30F7}}
+\do{ヰ゛}{\UTF{30F8}}
+\do{ヱ゛}{\UTF{30F9}}
+\do{ヲ゛}{\UTF{30FA}}
+\do{小か}{\UTF{3095}}
+\do{小け}{\UTF{3096}}
+\do{小こ}{こ}% fallback
+\do{小ク}{\UTF{31F0}}
+\do{小コ}{コ}% fallback
+\do{小シ}{\UTF{31F1}}
+\do{小ス}{\UTF{31F2}}
+\do{小ト}{\UTF{31F3}}
+\do{小ヌ}{\UTF{31F4}}
+\do{小ハ}{\UTF{31F5}}
+\do{小ヒ}{\UTF{31F6}}
+\do{小フ}{\UTF{31F7}}
+\do{小プ}{\UTF{31F7}\UTF{309A}}
+\do{小ヘ}{\UTF{31F8}}
+\do{小ホ}{\UTF{31F9}}
+\do{小ム}{\UTF{31FA}}
+\do{小ラ}{\UTF{31FB}}
+\do{小リ}{\UTF{31FC}}
+\do{小ル}{\UTF{31FD}}
+\do{小レ}{\UTF{31FE}}
+\do{小ロ}{\UTF{31FF}}
+
+%% redefine \ajLig
+\pxhy@DeclareMacro{Lig}#1{%
+  % use \csname, to full-expand the argument
+  \@{\expandafter\pxhy@uok@ajlig\csname}ajLig#1\@{\endcsname}%
+}
+\gdef\pxhy@uok@ajlig#1{%
+  \expandafter\pxhy@uok@ajlig@a\string#1\pxhy@mk#1%
+}
+\begingroup\catcode96=12 \lccode`\?=`\g \lowercase{\endgroup
+  \gdef\pxhy@uok@ajlig@a#1?#2\pxhy@mk}{%
+  \pxhy@uok@ajlig@b{#2}%
+}
+\gdef\pxhy@uok@ajlig@b#1#2{%{NAME}\ajNAME
+  % undefined name comes empty
+  \ifundef{#2}{}{%else
+    % if Unicode-OK then do it
+    \ifcsdef{pxhy@uok/#1}{#2}{%else
+      \pxhy@if@uok@head{#1}{#2}{%else
+        \pxhy@drop@trail@star{#1}%
+      }%
+    }%
+  }%
+}
+
+%% \pxhy@if@uok@head{<string>}{<yes>}{<no>}
+\gdef\pxhy@if@uok@head#1{%
+  \pxhy@if@uok@head@a#1@...\pxhy@mk
+}
+\gdef\pxhy@if@uok@head@a#1#2#3#4#5\pxhy@mk{%
+  \pxhy@cond\ifx#3@\fi{% two-letter
+    \ifcsdef{pxhy@uokh/#1}%
+  }{\pxhy@cond\ifx#4@\fi{% three-letter
+    \pxhy@cond@both\ifx#1(\fi\ifx#3)\fi{\@firstoftwo}{%else
+      \pxhy@cond@both\ifx#1□\fi\ifx#2:\fi
+    }%
+  }{\@secondoftwo}}%
+}
+
+%% \pxhy@drop@trail@star{<string>}
+\gdef\pxhy@drop@trail@star#1{%
+  \pxhy@drop@trail@star@a#1\pxhy@mk*\pxhy@mk\pxhy@end{#1}%
+}
+\gdef\pxhy@drop@trail@star@a#1*\pxhy@mk#2\pxhy@end#3{%
+  \ifstrempty{#2}{#3}{#1}%
+}
+
+%--------------------------------------- done
+\endgroup
+%=======================================
+\endinput
+%% EOF
