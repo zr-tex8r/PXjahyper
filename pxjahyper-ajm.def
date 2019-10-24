@@ -620,9 +620,32 @@
 %%<OK> \ajVar{<name>}
 % Expands to \CID{} or \UTF{}.
 
-%%<??> \ajLeader
+%%<!> \ajLeader
+% Redefined to expand to two instances of the leader character.
+\pxhy@DeclareMacro{Leader}{%
+  `\pxhy@ajLeader
+}
+\gdef\pxhy@ajLeader#1{%
+  \pxhy@cond\ifx[#1\fi{\pxhy@ajLeader@a}{\pxhy@ajLeader@a]{#1}}%
+}
+\gdef\pxhy@ajLeader@a#1]#2{%
+  \pxhy@shift{12214}{#2*2}\pxhy@shift{12214}{#2*2}%
+}
 
-%%<??> \ajQuote
+%%<!> \ajQuote
+% Redefined to be fully-expandable.
+\pxhy@DeclareMacro{Quote}{%
+  `\pxhy@ajQuote
+}
+\gdef\pxhy@ajQuote#1#2{%
+  \CID{\ifcase#1\or670\or672\or674\or676\or678\or680\or682\or
+         684\or686\or688\or690\or7608\or12125\or12127\or12129\or
+         12131\or12171\or16197\fi}%
+  #2%
+  \CID{\ifcase#1\or671\or673\or675\or677\or679\or681\or683\or
+         685\or687\or689\or691\or7609\or12126\or12128\or12130\or
+         12132\or12172\or16198\fi}%
+}
 
 %%<OK> Miscenallneous \ajXxx symbols
 % Most of them are string-OK; The exceptions are below.
