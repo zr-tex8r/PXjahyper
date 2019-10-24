@@ -442,6 +442,11 @@ pxhy@driver = \the\pxhy@driver^^J%
     e-TeX extension is unavailable%
   }
 \fi
+%% annihilate the ajmacros's own pdfstring process
+\ifpxhy@otfmacros\ifx\pxhy@otfcid@disabled\relax
+  \let\ajRedefine@ajCommands\relax
+  \AtBeginDocument{\let\ajRedefine@ajCommands\relax}
+\fi\fi
 
 %% \pxhy@CID{<cid>}
 \def\pxhy@CID#1{%

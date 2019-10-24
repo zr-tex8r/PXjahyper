@@ -124,8 +124,6 @@
       \csname \pxhy@#1\endcsname}%
   \pxhy@macro@name@list
 }
-%% annihilate the ajmacros's own process
-\let\ajRedefine@ajCommands\relax
 
 %=======================================
 % Macro Definitions
