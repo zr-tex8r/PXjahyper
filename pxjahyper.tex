@@ -3,8 +3,8 @@
 \documentclass[a4paper]{jsarticle}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{0.3e}
-\newcommand{\PkgDate}{2019/06/20}
+\newcommand{\PkgVersion}{0.4}
+\newcommand{\PkgDate}{2019/10/25}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -64,6 +64,13 @@
   {\upLaTeX} では使用不可。
 \item |noout2uni|（既定）\Means
   |out2uni| の否定。
+\item |otfcid|（既定）\Means
+  \Pkg{japanese-otf}パッケージの |\CID| をPDF文字列中で
+  使えるようにする。
+  具体的には、当該のAJ1のグリフに“対応”するUnicode文字が
+  あればそれを出力し、なければ（警告を出した上で）削除する。
+\item |nootfcid| \Means
+  |otfcid| の否定。
 \item |bigcode|（既定）\Means
   {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
   UTF8-UTF16を用いる。
@@ -98,7 +105,7 @@ PDF文字列以外では |\Ux| は以前の定義（または未定義）に戻�
 
 符号値は16進数で指定する。
 
-なお、\Pkg{OTF}パッケージの |\UTF| 命令は、PDF文字列中では
+なお、\Pkg{japanese-otf}パッケージの |\UTF| 命令は、PDF文字列中では
 out2uni用の出力を行うように設計されているが、
 本パッケージを {\upLaTeX} で用いた場合は、
 |\UTF| も（PDF文字列中では）|\Ux| と同じ動作
