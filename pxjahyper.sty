@@ -42,6 +42,7 @@
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
 \newif\ifpxhy@otfcid
+\newif\ifpxhy@otfmacros
 
 %--------------------------------------- Package options
 
@@ -84,14 +85,23 @@
 \DeclareOption{nojacommentline}{%
   \pxhy@jacommentlinefalse
 }
+\pxhy@otfcidtrue
 \DeclareOption{otfcid}{%
   \pxhy@otfcidtrue
+  \let\pxhy@otfcid@given=t
 }
 \DeclareOption{nootfcid}{%
   \pxhy@otfcidfalse
 }
+\DeclareOption{otfmacros}{%
+  \pxhy@otfmacrostrue
+  \let\pxhy@otfcid@given=t
+}
+\DeclareOption{nootfmacros}{%
+  \pxhy@otfmacrosfalse
+}
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,jacommentline,otfcid%
+  auto,tounicode,noout2uni,jacommentline%
 }
 \ProcessOptions*
 
@@ -192,6 +202,15 @@
   \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
   \expandafter\endinput
 \fi
+% otfcid requires upTeX or out2uni.
+\ifpxhy@uptex\else\ifpxhy@zerox\else
+  \pxhy@otfcidfalse
+  \ifx t\pxhy@otfcid@given
+    \PackageWarningNoLine\pxhy@pkgname
+     {Option 'otfcid' is invalid unless upTeX is used\MessageBreak
+      or 'out2uni' is specified}
+  \fi
+\fi\fi
 
 \iffalse
 \typeout{%
@@ -467,17 +486,23 @@ pxhy@driver = \the\pxhy@driver^^J%
 }
 
 %% \pxhy@dispatch@otfcid
+\@onlypreamble\pxhy@dispatch@otfcid
 \def\pxhy@dispatch@otfcid{%
   \pdfstringdefDisableCommands{%
     \let\CID\pxhy@CID
   }%
-  \ifx\ajSnowman\@undefined\else % ajmacros is loaded
-    \makeatletter
-    \InputIfFileExists{pxjahyper-ajm.def}{%
-      \PackageInfo\pxhy@pkgname
-       {Loaded 'pxjahyper-ajm.def'\@gobble}%
-    }{}%
-    \makeatother
+  \ifpxhy@otfmacros
+    \ifx\ajSnowman\@undefined\else % ajmacros is loaded
+      \makeatletter
+      \InputIfFileExists{pxjahyper-ajm.def}{%
+        \PackageInfo\pxhy@pkgname
+         {Loaded 'pxjahyper-ajm.def'\@gobble}%
+      }{%
+        \PackageWarning\pxhy@pkgname
+         {File 'pxjahyper-ajm.def' not found\@gobble}%
+      }%
+      \makeatother
+    \fi
   \fi
 }
 
