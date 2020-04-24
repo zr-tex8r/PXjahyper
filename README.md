@@ -16,11 +16,12 @@ Japanese.
   * TeX engine: pTeX, upTeX, pTeX-ng.
   * DVI-ware: dvipdfmx.
   * Dependent packages:
+      - atbegshi
       - hyperref
 
 ### Installation
 
-  - `*.sty` → $TEXMF/tex/platex/PXjahyper
+  - `*.sty`, `*.def` → $TEXMF/tex/platex/PXjahyper
 
 ### License
 
@@ -36,6 +37,7 @@ Please refer to the manual `pxjahyper.pdf` (in Japanese) for detail.
 Revision History
 ----------------
 
+  * Version 0.4a 〈2019/11/23〉
   * Version 0.4  〈2019/10/25〉
   * Version 0.3e 〈2019/06/20〉
   * Version 0.3d 〈2018/07/15〉

@@ -35,10 +35,12 @@ pxjahyper パッケージ ー 本体
 更新履歴
 --------
 
-  * Version 0.4  〈2019/10/25〉
-      - PDF 文字列中で `\CID` をサポート（`otfcid` オプション）
+  * Version 0.4a 〈2019/11/23〉
       - (試験的) PDF 文字列中で japanese-otf の文字入力マクロをサポート
         （`otfmacros` オプション）
+
+  * Version 0.4  〈2019/10/25〉
+      - PDF 文字列中で `\CID` をサポート（`otfcid` オプション）
 
   * Version 0.3e 〈2019/06/20〉
       - hyperref の `unicode` 指定が後から変更された場合はエラーを出す。

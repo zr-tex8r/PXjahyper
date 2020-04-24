@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2019/10/25 v0.4]
+\ProvidesPackage{pxjahyper}[2019/11/23 v0.4a]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -149,7 +149,8 @@
   \edef\pxhy@tmpb{\meaning#1}%
   \ifx\pxhy@tmpa\pxhy@tmpb #2\fi
 }
-\pxhy@check\eTeXversion{\pxhy@etextrue}
+\pxhy@check\eTeXversion{%
+  \IfFileExists{etoolbox.sty}{\pxhy@etextrue}{}}
 \pxhy@check\kanjiskip{\pxhy@ptextrue}
 \pxhy@check\forcecjktoken{\pxhy@uptextrue}
 \ifpxhy@ptex\else
@@ -458,7 +459,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   }{}
 \else
   \def\pxhy@otfcid@disabled{%
-    e-TeX extension is unavailable%
+    e-TeX extension (or 'etoolbox') is unavailable%
   }
 \fi
 %% annihilate the ajmacros's own pdfstring process
@@ -634,10 +635,21 @@ pxhy@driver = \the\pxhy@driver^^J%
 % Some ad-hoc redefinitions.
 \DeclareTextCommand{\textfi}{PD1}{fi}
 \DeclareTextCommand{\textfl}{PD1}{fl}
-\DeclareTextCommand{\IJ}{PD1}{IJ}
-\DeclareTextCommand{\ij}{PD1}{ij}
+\DeclareTextCommand{\IJ}{PD1}{IJ}% needed?
+\DeclareTextCommand{\ij}{PD1}{ij}% needed?
 \DeclareTextCommand{\textspace}{PD1}{\040}
 \DeclareTextCommand{\textquotesingle}{PD1}{\047}
+
+%% Some adjustments on accents.
+\DeclareTextAccent{\H}{PD1}{\texthungarumlaut}
+\DeclareTextCompositeCommand{\H}{PD1}{\@empty}{\texthungarumlaut}
+\DeclareTextCompositeCommand{\H}{PD1}{\ }{\texthungarumlaut}
+\DeclareTextAccent{\u}{PD1}{\textasciibreve}
+\DeclareTextCompositeCommand{\u}{PD1}{\@empty}{\textasciibreve}
+\DeclareTextCompositeCommand{\u}{PD1}{\ }{\textasciibreve}
+\DeclareTextAccent{\k}{PD1}{\textogonek}
+\DeclareTextCompositeCommand{\k}{PD1}{\@empty}{\textogonek}
+\DeclareTextCompositeCommand{\k}{PD1}{\ }{\textogonek}
 
 %%[A] The characters in PdfDocEncoding (except ASCII).
 \pxDeclarePdfTextCommand{\textasciibreve}{}{02D8}
@@ -802,6 +814,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 \pxDeclarePdfTextCommand{\textflq}{}{2039}
 \pxDeclarePdfTextCommand{\textfrq}{}{203A}
 \pxDeclarePdfTextCommand{\textEuro}{}{20AC}
+\pxDeclarePdfTextCommand{\guillemetleft}{}{00AB}
+\pxDeclarePdfTextCommand{\guillemetright}{}{00BB}
 %%
 
 %%[C] The characters that are included both in JIS X 0213
@@ -951,6 +965,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \pxDeclarePdfTextComposite{\=}{O}{}{014C}
 \pxDeclarePdfTextComposite{\=}{a}{}{0101}
 \pxDeclarePdfTextComposite{\=}{i}{}{012B}
+\pxDeclarePdfTextComposite{\=}{\i}{}{012B}
 \pxDeclarePdfTextComposite{\=}{u}{}{016B}
 \pxDeclarePdfTextComposite{\=}{e}{}{0113}
 \pxDeclarePdfTextComposite{\=}{o}{}{014D}
