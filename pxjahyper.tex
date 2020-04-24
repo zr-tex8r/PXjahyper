@@ -1,18 +1,16 @@
 % 文字コードは UTF-8
-% platex で組版する
-\documentclass[a4paper]{jsarticle}
+% uplatex で組版する
+\documentclass[uplatex,a4paper]{jsarticle}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{0.4}
-\newcommand{\PkgDate}{2019/10/25}
+\usepackage{bxtexlogo}
+\bxtexlogoimport{*}
+\newcommand{\PkgVersion}{0.4b}
+\newcommand{\PkgDate}{2020/04/24}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
 \newcommand{\Means}{~：\quad}
-\providecommand{\pTeX}{p\TeX}
-\providecommand{\upTeX}{u\pTeX}
-\providecommand{\pLaTeX}{p\LaTeX}
-\providecommand{\upLaTeX}{u\pLaTeX}
 %-----------------------------------------------------------
 \begin{document}
 \title{\Pkg{pxjahyper} パッケージ}

@@ -35,6 +35,9 @@ pxjahyper パッケージ ー 本体
 更新履歴
 --------
 
+  * Version 0.4b 〈2020/04/24〉
+      - `\copyright` の再定義をやめる。
+
   * Version 0.4a 〈2019/11/23〉
       - (試験的) PDF 文字列中で japanese-otf の文字入力マクロをサポート
         （`otfmacros` オプション）
