@@ -26,6 +26,7 @@
 
 %% packages
 \RequirePackage{atbegshi}
+\RequirePackage{ltxcmds}[2011/08/22]% v1.21
 
 %% globals
 \newif\ifpxhy@ptex
@@ -42,6 +43,7 @@
 \let\pxhy@driver\@undefined
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
+\newif\ifpxhy@disablecmds
 \newif\ifpxhy@otfcid
 \newif\ifpxhy@otfmacros
 
@@ -86,6 +88,12 @@
 \DeclareOption{nojacommentline}{%
   \pxhy@jacommentlinefalse
 }
+\DeclareOption{disablecmds}{%
+  \pxhy@disablecmdstrue
+}
+\DeclareOption{nodisablecmds}{%
+  \pxhy@disablecmdsfalse
+}
 \pxhy@otfcidtrue
 \DeclareOption{otfcid}{%
   \pxhy@otfcidtrue
@@ -101,7 +109,7 @@
   \pxhy@otfmacrosfalse
 }
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,jacommentline%
+  auto,tounicode,noout2uni,jacommentline,disablecmds%
 }
 \ProcessOptions*
 
@@ -233,11 +241,6 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 %--------------------------------------- Helpers
 
-%% packages
-\ifpxhy@etoolbox
-  \RequirePackage{etoolbox}[2011/01/03]%v2.1
-\fi
-
 %% unique tokens
 \def\pxhy@end{\pxhy@end@}
 \let\pxhy@mk\indent % unexpandable
@@ -269,6 +272,32 @@ pxhy@driver = \the\pxhy@driver^^J%
   \let\pxhy@forcecjktoken\relax
 \fi
 
+%--------------------------------------- Helpers (e-TeX)
+\ifpxhy@etex
+
+%% packages
+\ifpxhy@etoolbox
+  \RequirePackage{etoolbox}[2011/01/03]%v2.1
+\fi
+
+%% \pxhy@if@star{<varient>}{<normal>}
+% Expands to <varient> if followed by *, otherwise to <normal>.
+\def\pxhy@if@star#1#2#3{% #3=next-arg
+  \expandafter\pxhy@if@star@a\expandafter @\detokenize{#3}@%
+      {#1}@*@{#2{#3}}\pxhy@mk
+}
+\def\pxhy@if@star@a#1@*@#2#3\pxhy@mk{#2}
+
+%% \pxhy@if@opt{<true>}{<false>}
+% Expands to <true>{<opt>} if followed by [<opt>], otherwise to <false>.
+\def\pxhy@if@opt#1#2#3{% #3=next-arg
+  \expandafter\pxhy@if@opt@a\expandafter @\detokenize{#3}@%
+      {\pxhy@if@opt@b{#1}}@[@{#2{#3}}\pxhy@mk%]
+}
+\def\pxhy@if@opt@a#1@[@#2#3\pxhy@mk{#2}
+\def\pxhy@if@opt@b#1#2]{#1{#2}}
+
+\fi
 %--------------------------------------- Output 'tounicode' special
 \ifpxhy@tounicode
 
@@ -1121,6 +1150,71 @@ pxhy@driver = \the\pxhy@driver^^J%
     \fi
   }
 \fi
+
+\fi
+%--------------------------------------- 'disablecmds'
+\ifpxhy@disablecmds
+
+%% \pxhy@rensuji
+\ifpxhy@etex
+  \def\pxhy@rensuji{%
+    \pxhy@if@star\pxhy@rensuji@a\pxhy@rensuji@a
+  }
+  \def\pxhy@rensuji@a{%
+    \pxhy@if@opt\@secondoftwo\@firstofone
+  }
+\else
+  \let\pxhy@rensuji\relax % freeze
+\fi
+
+%% \pxhy@ifdef@let\CSa\CSb
+\def\pxhy@ifdef@let#1#2{%
+  \ifx#1\@undefined\else
+    \let#1#2%
+  \fi
+}
+
+%% \pxhy@disable@commands
+\def\pxhy@disable@commands{%
+  % pTeX primitives
+  \let\autospacing\@empty
+  \let\autoxspacing\@empty
+  \let\inhibitglue\@empty
+  \let\noautospacing\@empty
+  \let\noautoxspacing\@empty
+  % pLaTeX core
+  \let\romanencoding\@gobble
+  \let\kanjiencoding\@gobble
+  \let\romanfamily\@gobble
+  \let\kanjifamily\@gobble
+  \let\romanseries\@gobble
+  \let\kanjiseries\@gobble
+  \let\romanshape\@gobble
+  \let\kanjishape\@gobble
+  \let\useroman\@gobblefour
+  \let\usekanji\@gobblefour
+  \let\textmc\@firstofone
+  \let\textgt\@firstofone
+  \let\mcfamily\@empty
+  \let\gtfamily\@empty
+  \let\userelfont\@empty
+  \let\<\@empty
+  % plext
+  \pxhy@ifdef@let\bou\@firstofone
+  \pxhy@ifdef@let\kasen\@firstofone
+  \pxhy@ifdef@let\rensuji\pxhy@rensuji
+  \pxhy@ifdef@let\prensuji\pxhy@rensuji
+  \pxhy@ifdef@let\Rensuji\pxhy@rensuji
+  % japanese-otf
+  \pxhy@ifdef@let\textmg\@firstofone
+  \pxhy@ifdef@let\mgfamily\@empty
+  \pxhy@ifdef@let\ltseries\@empty
+  \pxhy@ifdef@let\ebseries\@empty
+  \pxhy@ifdef@let\propshape\@empty
+}
+
+%% register to 'disable' list
+\ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@commands}
 
 \fi
 %--------------------------------------- All done

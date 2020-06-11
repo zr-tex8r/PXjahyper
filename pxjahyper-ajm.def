@@ -46,13 +46,6 @@
   \pxhy@cond{\if #1#2T\else F\fi\else F\fi T}\fi
 }
 
-%% \pxhy@if@star{<varient>}{<normal>}
-% Expands to <varient> if followed by *, otherwise to <normal>.
-\def\pxhy@if@star#1#2#3{% #3=next-arg
-  \expandafter\pxhy@if@star@a\detokenize{#3}@{#1}*@{#2{#3}}\pxhy@mk
-}
-\def\pxhy@if@star@a#1*@#2#3\pxhy@mk{#2}
-
 %% \pxhy@if@plus{<varient>}{<normal>}
 % Expands to <varient> if followed by +, otherwise to <normal>.
 \def\pxhy@if@plus#1#2#3{% #3=next-arg
@@ -131,7 +124,7 @@
 %--------------------------------------- helpers
 
 %% prepare
-\csuse{forcecjktoken}
+\pxhy@forcecjktoken
 
 %% shorthands
 \catcode`\`=\active \let`\noexpand
