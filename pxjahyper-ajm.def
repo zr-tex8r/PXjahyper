@@ -43,7 +43,7 @@
 %% \pxhy@cond@both\ifXXX...\fi\ifYYY...\fi{<yes>}{<no>}
 % Checks whether \ifXXX and \ifYYY both hold.
 \@gobbletwo\if\if\@gobbletwo\if\if \def\pxhy@cond@both#1\fi#2\fi{%
-  \bxju@cond{\if #1#2T\else F\fi\else F\fi T}\fi
+  \pxhy@cond{\if #1#2T\else F\fi\else F\fi T}\fi
 }
 
 %% \pxhy@if@star{<varient>}{<normal>}
