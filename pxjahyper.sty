@@ -31,6 +31,7 @@
 \newif\ifpxhy@ptex
 \newif\ifpxhy@uptex
 \newif\ifpxhy@etex
+\newif\ifpxhy@etoolbox
 \let\pxhy@jcode\@undefined
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
@@ -95,7 +96,6 @@
 }
 \DeclareOption{otfmacros}{%
   \pxhy@otfmacrostrue
-  \let\pxhy@otfcid@given=t
 }
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
@@ -150,7 +150,9 @@
   \ifx\pxhy@tmpa\pxhy@tmpb #2\fi
 }
 \pxhy@check\eTeXversion{%
-  \IfFileExists{etoolbox.sty}{\pxhy@etextrue}{}}
+  \pxhy@etextrue
+  \IfFileExists{etoolbox.sty}{\pxhy@etoolboxtrue}{}%
+}
 \pxhy@check\kanjiskip{\pxhy@ptextrue}
 \pxhy@check\forcecjktoken{\pxhy@uptextrue}
 \ifpxhy@ptex\else
@@ -203,13 +205,18 @@
   \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
   \expandafter\endinput
 \fi
+% otfmacros forces use of otfcid.
+\ifpxhy@otfmacros
+  \let\pxhy@otfcid@given=t
+  \pxhy@otfcidtrue
+\fi
 % otfcid requires upTeX or out2uni.
 \ifpxhy@uptex\else\ifpxhy@zerox\else
   \pxhy@otfcidfalse
   \ifx t\pxhy@otfcid@given
     \PackageWarningNoLine\pxhy@pkgname
-     {Option 'otfcid' is invalid unless upTeX is used\MessageBreak
-      or 'out2uni' is specified}
+     {Option 'otfcid'/'otfmacros' is invalid\MessageBreak
+      unless upTeX is used or 'out2uni' is specified}
   \fi
 \fi\fi
 
@@ -227,7 +234,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 %--------------------------------------- Helpers
 
 %% packages
-\ifpxhy@etex
+\ifpxhy@etoolbox
   \RequirePackage{etoolbox}[2011/01/03]%v2.1
 \fi
 
@@ -445,7 +452,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \let\pxhy@otfcid@disabled\relax
 
 %% preparation
-\ifpxhy@etex
+\ifpxhy@etoolbox
   % check if bxjatoucs is available
   \IfFileExists{bxjatoucs.sty}{%
     \let\bxjatoucsCheckAvail=t
@@ -457,11 +464,15 @@ pxhy@driver = \the\pxhy@driver^^J%
       package 'bxjatoucs' is unavailable%
     }%
   }{}
+\else\ifpxhy@etex
+  \def\pxhy@otfcid@disabled{%
+    package 'etoolbox' is unavailable%
+  }
 \else
   \def\pxhy@otfcid@disabled{%
-    e-TeX extension (or 'etoolbox') is unavailable%
+    e-TeX extension is unavailable%
   }
-\fi
+\fi\fi
 %% annihilate the ajmacros's own pdfstring process
 \ifpxhy@otfmacros\ifx\pxhy@otfcid@disabled\relax
   \let\ajRedefine@ajCommands\relax
@@ -514,7 +525,7 @@ pxhy@driver = \the\pxhy@driver^^J%
       \pxhy@dispatch@otfcid
     \else
       \PackageWarningNoLine\pxhy@pkgname
-       {Option 'otfcid' is disabled, because\MessageBreak
+       {Option 'otfcid'/'otfmacros' is disabled, because\MessageBreak
         \pxhy@otfcid@disabled}%
       \pxhy@otfcidfalse
     \fi
