@@ -12,14 +12,20 @@ LaTeX： pLaTeX 上での hyperref のサポート
 ### 前提環境
 
   * フォーマット： LaTeX
-  * エンジン： pTeX、upTeX、pTeX-ng
+  * エンジン： pTeX、upTeX、pTeX-ng  
+    ※一部の機能では e-TeX 拡張が必要。
   * DVIウェア： dvipdfmx
   * 依存パッケージ：
+      - atbegshi
       - hyperref
+  * 一部の機能で必要なパッケージ：
+      - japanese-otf
+      - etoolbox
+      - bxjatoucs
 
 ### インストール
 
-  - `*.sty` → $TEXMF/tex/platex/PXjahyper
+  - `*.sty`, `*.def` → $TEXMF/tex/platex/PXjahyper
 
 ### ライセンス
 
@@ -34,6 +40,11 @@ pxjahyper パッケージ ー 本体
 
 更新履歴
 --------
+
+  * Version 0.5  〈2020/06/13〉
+      - `otfmacros` オプションを正式にサポート。
+      - `disablecmds` オプションを追加。
+      - `none`（`nodvidriver` の別名）を非推奨とする。
 
   * Version 0.4b 〈2020/04/24〉
       - `\copyright` の再定義をやめる。

@@ -13,11 +13,16 @@ Japanese.
 ### System Requirements
 
   * TeX format: LaTeX.
-  * TeX engine: pTeX, upTeX, pTeX-ng.
+  * TeX engine: pTeX, upTeX, pTeX-ng.  
+    Some features require the e-TeX extension.
   * DVI-ware: dvipdfmx.
   * Dependent packages:
       - atbegshi
       - hyperref
+  * Packages required by some features:
+      - japanese-otf
+      - etoolbox
+      - bxjatoucs
 
 ### Installation
 
@@ -37,6 +42,7 @@ Please refer to the manual `pxjahyper.pdf` (in Japanese) for detail.
 Revision History
 ----------------
 
+  * Version 0.5  〈2020/06/13〉
   * Version 0.4b 〈2020/04/24〉
   * Version 0.4a 〈2019/11/23〉
   * Version 0.4  〈2019/10/25〉

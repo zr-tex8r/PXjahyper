@@ -1,16 +1,17 @@
 % 文字コードは UTF-8
 % uplatex で組版する
 \documentclass[uplatex,a4paper]{jsarticle}
+\renewcommand{\headfont}{\gtfamily\romanseries{sbc}\sffamily}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
 \usepackage{bxtexlogo}
 \bxtexlogoimport{*}
-\newcommand{\PkgVersion}{0.4b}
-\newcommand{\PkgDate}{2020/04/24}
+\newcommand{\PkgVersion}{0.5}
+\newcommand{\PkgDate}{2020/06/13}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
-\newcommand{\Means}{~：\quad}
+\newcommand{\Means}{：\quad}
 %-----------------------------------------------------------
 \begin{document}
 \title{\Pkg{pxjahyper} パッケージ}
@@ -67,8 +68,29 @@
   使えるようにする。
   具体的には、当該のAJ1のグリフに“対応”するUnicode文字が
   あればそれを出力し、なければ（警告を出した上で）削除する。
-\item |nootfcid| \Means
+\item |nootfcid|\Means
   |otfcid| の否定。
+  \Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
+  \Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージインストールが必要。
+\item |disablecmds|（既定）\Means
+  「PDF文字列中のテキスト装飾命令の無効化」を有効にする。
+  \Note 詳細は\ref{ssec:disablecmds}節を参照。
+\item |nodisablecmds|\Means
+  |disablecmds| の否定。
+\item |otfmacros|\Means
+  \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
+  文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
+  “可能な限り”使えるようにする。
+  \Note Unicode文字で表現可能であればそれを出力し、
+  なければ代替表現を出力する。
+  \Note |otfmacros| を指定する場合は |otfcid| も有効にする必要がある。
+  \Note \Pkg{ajmacros}パッケージの多くの命令は“脆弱（fragile）”である。
+  そのため、節見出し（|\section| 等の引数）で |\ajMaru| 等の命令を
+  使いたい場合は、命令の前に |\protect| 付ける必要がある。
+  \footnote{ちなみに、引数がPDF文字列として解釈される場合には、
+    |\protect| は全く結果に影響しない。}
+\item |nootfmacros|（既定）\Means
+  |otfmacros| の否定。
 \item |bigcode|（既定）\Means
   {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
   UTF8-UTF16を用いる。
@@ -78,12 +100,13 @@
   \Note 0.3a版より既定を |bigcode| に変更した。
 \item |dvipdfmx|\Means
   dvipdfmxを前提とした動作を行う。
-\item |nodriver|/|none|\Means
+\item |nodvidriver|\Means
   dvipdfmxを前提とした動作を抑止する。
-  現状では、この場合には本パッケージは実質的に何の動作も行わない。
+  \Note 現状では、この場合には本パッケージは実質的に何の動作も行わない。
+  \Note 0.5版より、|nodvidriver| の別名の |none| は非推奨の扱いとする。
 \item |auto|（既定）\Means
   \Pkg{hyperref}のドライバがdvipdfmx用ならば |dvipdfmx|、
-  それ以外は |none| の動作。
+  それ以外は |nodvidriver| の動作。
 \end{itemize}
 
 %===========================================================
@@ -92,9 +115,20 @@
 「概要」で述べた機能は（オプション設定に応じて）
 自動的に実施される。
 
-\paragraph{Unicode符号値による入力}
+%-------------------
+\subsection{Unicode符号値による入力}
+
 PDF文字列入力中で、|\Ux| が以下の意味になる。
 PDF文字列以外では |\Ux| は以前の定義（または未定義）に戻る。
+\footnote{|\Ux| という命令名は\Pkg{bxbase}パッケージの
+Unicode符号値入力用の命令が使っているものである。
+従って、\Pkg{bxbase}パッケージを読み込んでいれば、
+「PDF文字列と版面出力の両方に使われる」ようなテキストにおいて、
+|\Ux| でUnicode符号値入力が可能になる。
+ただし、Unicode符号値入力用の命令としては
+「\Pkg{japanese-otf}パッケージの |\UTF| 命令」
+の方が有名であり、\Pkg{pxjahyper}は |\UTF| も正しく扱えるので、
+こちらを使う方が無難かもしれない。}
 
 \begin{itemize}
 \item |\Ux{|Unicode符号値|}|\Means
@@ -109,7 +143,9 @@ out2uni用の出力を行うように設計されているが、
 |\UTF| も（PDF文字列中では）|\Ux| と同じ動作
 （つまりtounicode用の出力）になるように変更される。
 
-\paragraph{PDF文字列用の文字命令の定義}
+%-------------------
+\subsection{PDF文字列用の文字命令の定義}
+
 以下の命令が提供される。（プリアンブルでのみ使用可能。）
 
 \begin{itemize}
@@ -137,5 +173,47 @@ PDF文字列中で |\textschwa|（schwa記号）や |\d{t}|（\d{t}）が
 \pxDeclarePdfTextCommand{\textschwa}{}{0259}
 \pxDeclarePdfTextComposite{\d}{t}{}{1E6D}
 \end{verbatim}\end{quote}
+
+%-------------------
+\subsection{PDF文字列用中のテキスト装飾命令の無効化}
+\label{ssec:disablecmds}
+
+PDF文字列は単なるUnicode文字列として扱われるものなので、
+|\textit| や |\large| 等のテキスト装飾用の命令は意味をなさず、
+またそれらの命令の実装はPDF文字列の解釈中は正常に処理できない。
+PDF文字列と版面出力の両方に使われるテキスト（節見出し等）
+についてテキスト装飾命令が支障なく使えるように、
+\Pkg{hyperref}では基本的なテキスト装飾命令
+（多くは{\LaTeX}カーネルが提供するもの）
+について、「PDF文字列として扱う場合は自動的に無力化
+\footnote{例えば、“|\textit{text}|”や“|{\large text}|”は
+  単に“|text|”と書いたものと見なされる。}
+する」機構を実装している。
+これにより、例えば節見出しのテキストに“|\textit{text}|”が
+含まれていたとすると、
+版面に出力する場合には“\textit{text}”のように装飾が施され、
+一方で、PDF文字列としては“|text|”と解釈されることになる。
+
+0.5版以降の\Pkg{pxjahyper}では、この無効化の対象に
+「和文用のテキスト装飾命令（およびそれに準じるもの）」
+を追加するようになった。
+以下の命令が対象になる。
+
+\begin{itemize}
+\item 和文のフォント選択命令\Means
+  |\textmc| |\gtfamily| |\kanjifamily| |\useroman| |\userelfont|
+  など
+\item 次の{\pLaTeX}カーネル命令\Means
+  |\<|
+\item 次の{\pTeX}プリミティブ\Means
+  |\inhibitglue| |\|(|no|)|autospacing| |\|(|no|)|autoxspacing|
+\item 次の\Pkg{plext}の命令\Means
+  |\bou| |\kasen| |\rensuji|
+\item 次の\Pkg{japanese-otf}の命令\Means
+  |\textmg| |\mgfamily| |\ltseries| |\ebseries| |\propshape|
+\end{itemize}
+
+
+
 
 \end{document}

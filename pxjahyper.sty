@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2020/04/24 v0.4b]
+\ProvidesPackage{pxjahyper}[2020/06/13 v0.5]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -1214,6 +1214,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 }
 
 %% register to 'disable' list
+% This registration should be of lower priority than others,
+% and thus is prepended to pdfstringdefPreHook.
 \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@commands}
 
 \fi
