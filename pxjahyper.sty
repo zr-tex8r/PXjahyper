@@ -246,6 +246,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@out@special{<text>}
+\ifx\AddToHook\@undefined %------- without hook system
 \def\pxhy@out@special#1{%
   \begingroup
     \toks\z@{\special{#1}}%
@@ -253,6 +254,13 @@ pxhy@driver = \the\pxhy@driver^^J%
     \xdef\AtBegShi@HookFirst{\the\toks@\the\toks\tw@}%
   \endgroup
 }
+\else                     %------- with hook system
+\def\pxhy@out@special#1{%
+  \AddToHook{shipout/firstpage}[./urgent]{\special{#1}}%
+}
+\DeclareHookRule{shipout/firstpage}{./urgent}{<}{hyperref}
+\DeclareHookRule{shipout/firstpage}{.}{>}{hyperref}
+\fi
 
 %% \pxhy@get@jchar{<num>}
 % Let \pxhy@jchar a macro expanding to a single jchar token
