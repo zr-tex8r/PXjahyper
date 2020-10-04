@@ -33,6 +33,7 @@
 \newif\ifpxhy@uptex
 \newif\ifpxhy@etex
 \newif\ifpxhy@etoolbox
+\newif\ifpxhy@old@hook@system
 \let\pxhy@jcode\@undefined
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
@@ -168,6 +169,9 @@
   \expandafter\endinput
 \fi
 
+%% Check for the new hook system.
+\@ifl@t@r\fmtversion{2020/10/01}{}{\pxhy@old@hook@systemtrue}
+
 %% Check the internal jcode.
 \ifnum     \jis"2121="8140
   \let\pxhy@jcode=s\relax
@@ -228,16 +232,17 @@
   \fi
 \fi\fi
 
-\iffalse
-\typeout{%
+\bxDebug{****pxjahyper env^^J%
 pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
 pxhy@uptex = \ifpxhy@uptex true\else false\fi^^J%
+pxhy@etex = \ifpxhy@etex true\else false\fi^^J%
+pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
+pxhy@old@hook@system = \ifpxhy@old@hook@system true\else false\fi^^J%
 pxhy@jcode = \meaning\pxhy@jcode^^J%
 pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
 pxhy@zerox = \ifpxhy@zerox true\else false\fi^^J%
 pxhy@driver = \the\pxhy@driver^^J%
 }
-\fi
 
 %--------------------------------------- Helpers
 
@@ -246,7 +251,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@out@special{<text>}
-\ifx\AddToHook\@undefined %------- without hook system
+\ifpxhy@old@hook@system %----
 \def\pxhy@out@special#1{%
   \begingroup
     \toks\z@{\special{#1}}%
@@ -254,13 +259,13 @@ pxhy@driver = \the\pxhy@driver^^J%
     \xdef\AtBegShi@HookFirst{\the\toks@\the\toks\tw@}%
   \endgroup
 }
-\else                     %------- with hook system
+\else %----
 \def\pxhy@out@special#1{%
-  \AddToHook{shipout/firstpage}[./urgent]{\special{#1}}%
+  \AddToHook{shipout/firstpage}[./enc]{\special{#1}}%
 }
-\DeclareHookRule{shipout/firstpage}{./urgent}{<}{hyperref}
+\DeclareHookRule{shipout/firstpage}{./enc}{<}{hyperref}
 \DeclareHookRule{shipout/firstpage}{.}{>}{hyperref}
-\fi
+\fi %----
 
 %% \pxhy@get@jchar{<num>}
 % Let \pxhy@jchar a macro expanding to a single jchar token
