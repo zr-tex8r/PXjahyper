@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2020/10/04 v0.5b]
+\ProvidesPackage{pxjahyper}[2020/10/05 v0.6-pre]
 
 %% error messages
 \def\pxhy@pkgname{pxjahyper}
@@ -25,7 +25,6 @@
 \providecommand{\bxDebug}[1]{}
 
 %% packages
-\RequirePackage{atbegshi}
 \RequirePackage{ltxcmds}[2011/08/22]% v1.21
 
 %% globals
@@ -33,7 +32,7 @@
 \newif\ifpxhy@uptex
 \newif\ifpxhy@etex
 \newif\ifpxhy@etoolbox
-\newif\ifpxhy@old@hook@system
+\newif\ifpxhy@new@hook@system
 \let\pxhy@jcode\@undefined
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
@@ -170,7 +169,7 @@
 \fi
 
 %% Check for the new hook system.
-\@ifl@t@r\fmtversion{2020/10/01}{}{\pxhy@old@hook@systemtrue}
+\@ifl@t@r\fmtversion{2020/10/01}{\pxhy@new@hook@systemtrue}{}
 
 %% Check the internal jcode.
 \ifnum     \jis"2121="8140
@@ -237,7 +236,7 @@ pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
 pxhy@uptex = \ifpxhy@uptex true\else false\fi^^J%
 pxhy@etex = \ifpxhy@etex true\else false\fi^^J%
 pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
-pxhy@old@hook@system = \ifpxhy@old@hook@system true\else false\fi^^J%
+pxhy@new@hook@system = \ifpxhy@new@hook@system true\else false\fi^^J%
 pxhy@jcode = \meaning\pxhy@jcode^^J%
 pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
 pxhy@zerox = \ifpxhy@zerox true\else false\fi^^J%
@@ -251,21 +250,36 @@ pxhy@driver = \the\pxhy@driver^^J%
 \let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@out@special{<text>}
-\ifpxhy@old@hook@system %----
 \def\pxhy@out@special#1{%
+  \edef\pxhy@tmpa{%
+    \noexpand\pxhy@begin@dvi@enc@hook{\special{#1}}%
+  }\pxhy@tmpa
+}
+
+%% \pxhy@begin@dvi@hook{<text>}
+%% \pxhy@begin@dvi@enc@hook{<text>}
+\ifpxhy@new@hook@system
+  \def\pxhy@begin@dvi@hook#1{%
+    \AddToHook{shipout/firstpage}{#1}%
+  }
+  \DeclareHookRule{shipout/firstpage}{.}{>}{hyperref}
+  \def\pxhy@begin@dvi@enc@hook#1{% only once
+    \AddToHook{shipout/firstpage}[./enc]{#1}%
+    \DeclareHookRule{shipout/firstpage}{./enc}{<}{hyperref}%
+  }
+\else
+  \RequirePackage{atbegshi}[2011/10/05]% v1.16
+\def\pxhy@begin@dvi@enc@hook#1{%
   \begingroup
-    \toks\z@{\special{#1}}%
+    \toks\z@{#1}%
     \toks\tw@\expandafter{\AtBegShi@HookFirst}%
     \xdef\AtBegShi@HookFirst{\the\toks@\the\toks\tw@}%
   \endgroup
 }
-\else %----
-\def\pxhy@out@special#1{%
-  \AddToHook{shipout/firstpage}[./enc]{\special{#1}}%
-}
-\DeclareHookRule{shipout/firstpage}{./enc}{<}{hyperref}
-\DeclareHookRule{shipout/firstpage}{.}{>}{hyperref}
-\fi %----
+  \def\pxhy@begin@dvi@hook#1{%
+    \AtBeginShipoutFirst{#1}%
+  }
+\fi
 
 %% \pxhy@get@jchar{<num>}
 % Let \pxhy@jchar a macro expanding to a single jchar token
@@ -316,6 +330,10 @@ pxhy@driver = \the\pxhy@driver^^J%
 
   \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
     %% dvipdfmx
+    \IfFileExists{pxjahyper-enc.sty}{% FIXME: TRANSIENT CODE
+    \RequirePackage{pxjahyper-enc}[]%
+    \ifpxhy@bigcode\else \suppressbigcode \fi
+    }{%else
     \if e\pxhy@jcode % euc
       \pxhy@out@special{pdf:tounicode EUC-UCS2}
     \else\if s\pxhy@jcode % sjis
@@ -325,6 +343,7 @@ pxhy@driver = \the\pxhy@driver^^J%
     \else
       \pxhy@out@special{pdf:tounicode UTF8-UCS2}
     \fi\fi\fi
+    }%
   \fi                           %</dvipdfmx>
 
 \fi
@@ -350,12 +369,10 @@ pxhy@driver = \the\pxhy@driver^^J%
         \expandafter\pxhy@next\the\@tempcnta\relax
         \paperwidth=\pxhy@tmpa\paperwidth
         \paperheight=\pxhy@tmpa\paperheight
-        \xdef\pxhy@spec@papersize{%
-          papersize=\the\paperwidth,\the\paperheight
-        }%
-        \AtBeginShipoutFirst{%
-          \special{\pxhy@spec@papersize}%
-        }
+        \edef\pxhy@tmpa{%
+          \noexpand\pxhy@begin@dvi@hook{%
+            \special{papersize=\the\paperwidth,\the\paperheight}}%
+        }\pxhy@tmpa
       \endgroup
     \fi\fi
   \fi
