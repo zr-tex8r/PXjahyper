@@ -102,8 +102,10 @@
 \DeclareOption{nootfcid}{%
   \pxhy@otfcidfalse
 }
+\pxhy@otfmacrostrue
 \DeclareOption{otfmacros}{%
   \pxhy@otfmacrostrue
+  \let\pxhy@otfcid@given=t
 }
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
@@ -218,7 +220,6 @@
 \fi
 % otfmacros forces use of otfcid.
 \ifpxhy@otfmacros
-  \let\pxhy@otfcid@given=t
   \pxhy@otfcidtrue
 \fi
 % otfcid requires upTeX or out2uni.
