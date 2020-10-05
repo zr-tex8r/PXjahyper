@@ -39,9 +39,20 @@ The pxjahyper Package ー main
 Please refer to the manual `pxjahyper.pdf` (in Japanese) for detail.
 
 
+The pxjahyper-enc Package ー Encoding setting
+---------------------------------------------
+
+This is a single-feature package excerpted from the pxjahyper package,
+and is provided for internal use from other packages.
+
+It only issues a  "tounicode special” for specifying the encoding of
+the PDF strings in the output DVI file.
+
+
 Revision History
 ----------------
 
+  * Version 0.6  〈2020/10/05〉
   * Version 0.5b 〈2020/10/04〉
   * Version 0.5a 〈2020/09/27〉
   * Version 0.5  〈2020/06/13〉

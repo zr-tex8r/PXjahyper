@@ -6,8 +6,8 @@
 \MakeShortVerb{\|}
 \usepackage{bxtexlogo}
 \bxtexlogoimport{*}
-\newcommand{\PkgVersion}{0.5b}
-\newcommand{\PkgDate}{2020/10/04}
+\newcommand{\PkgVersion}{0.6}
+\newcommand{\PkgDate}{2020/10/05}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -77,7 +77,7 @@
   \Note 詳細は\ref{ssec:disablecmds}節を参照。
 \item |nodisablecmds|\Means
   |disablecmds| の否定。
-\item |otfmacros|\Means
+\item |otfmacros|（既定）\Means
   \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
   文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
   “可能な限り”使えるようにする。
@@ -89,8 +89,9 @@
   使いたい場合は、命令の前に |\protect| 付ける必要がある。
   \footnote{ちなみに、引数がPDF文字列として解釈される場合には、
     |\protect| は全く結果に影響しない。}
-\item |nootfmacros|（既定）\Means
+\item |nootfmacros|\Means
   |otfmacros| の否定。
+  \Note 0.6版より既定を |otfmacros| に変更した。
 \item |bigcode|（既定）\Means
   {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
   UTF8-UTF16を用いる。

@@ -38,8 +38,42 @@ pxjahyper パッケージ ー 本体
 詳細についてはマニュアル `pxjahyper.pdf` を参照されたい。
 
 
+pxjahyper-enc パッケージ ー 文字コード設定
+------------------------------------------
+
+他のパッケージの内部で読み込むために pxjahyper から機能を抜粋して作った
+パッケージであり、DVI ファイル中の PDF 文字列の漢字コードを指定するため
+の「tounicode special」を出力する機能のみをもつ。
+
+※文書作成者は pxjahyper を読み込むことが推奨される。
+
+### パッケージオプション
+
+※オプション無しでの読込が望ましい。一応グローバルのドライバオプション
+に反応するが、これについても「ドライバ指定が dvipdfmx である場合にのみ
+読み込む」のが望ましい。
+
+  * ドライバオプション：`dvipdfmx`/`dvips`/`nodvidriver` があり、`dvips`
+    はエラーになり、`nodvidriver` はパッケージの機能を無効化する。
+
+### 機能
+
+パッケージを読み込むと、既定動作として、エンジンの内部漢字コードに基づき
+適切な「tounicode special」を出力する。
+
+  * `\suppressbigcode`：内部漢字コードが Unicode のときに、`UTF8-UTF16`
+    ではなく `UTF8-UCS2` の CMap を指定する。
+  * `\suppressdefaulttounicode`：既定動作を無効にする。
+  * `\pxjahyperToUnicodeSpecial{<名前>}`：引数の CMap 名を指定して
+    「tounicode special」を出力する。
+
+
 更新履歴
 --------
+
+  * Version 0.6  〈2020/10/05〉
+      - pxjahyper-enc パッケージを追加した。
+      - `otfmacros` オプションを既定で有効にする。
 
   * Version 0.5b 〈2020/10/04〉
       - バグ修正。
