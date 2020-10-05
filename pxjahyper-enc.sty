@@ -1,0 +1,147 @@
+%%
+%% This is file 'pxjahyper-enc.sty'.
+%%
+%% Copyright (c) 2012-2020 Takayuki YATO (aka. "ZR")
+%%   GitHub:   https://github.com/zr-tex8r
+%%   Twitter:  @zr_tex8r
+%%
+%% This package is distributed under the MIT License.
+%%
+
+%% package declaration
+\NeedsTeXFormat{pLaTeX2e}
+\ProvidesPackage{pxjahyper-enc}[2020/10/05 v0.6-pre]
+\def\pxhe@pkgname{pxjahyper-enc}
+\providecommand{\bxDebug}[1]{}
+
+%--------------------------------------- package options
+
+%% variables
+\let\pxhe@driver=d
+
+% driver options
+\DeclareOption{dvipdfmx}{%
+  \let\pxhe@driver=d\relax
+}
+\DeclareOption{dvips}{%
+  \let\pxhe@driver=s\relax
+}
+\DeclareOption{nodvidriver}{%
+  \let\pxhe@driver=0\relax
+}
+% dispatch
+\ProcessOptions*
+
+%--------------------------------------- user interface
+
+%% variables
+\let\pxhe@bigcode=t
+\let\pxhe@default@tounicode=t
+
+%%<*> \suppressbigcode
+\@onlypreamble\suppressbigcode
+\newcommand*\suppressbigcode{%
+  \global\let\pxhe@bigcode=f\relax
+}
+
+%%<*> \suppressdefaulttounicode
+\@onlypreamble\suppressdefaulttounicode
+\newcommand*\suppressdefaulttounicode{%
+  \global\let\pxhe@default@tounicode=f\relax
+}
+
+%%<+> \pxjahyperToUnicodeSpecial{<name>}
+\newcommand*\pxjahyperToUnicodeSpecial[1]{%
+  \edef\pxhe@tmpa{%
+    \noexpand\pxhe@begin@dvi@hook{\special{pdf:tounicode #1}}%
+  }\pxhe@tmpa
+}
+
+%--------------------------------------- environment
+
+%% check
+\ifx d\pxhe@driver\else
+  \ifx 0\pxhe@driver\else
+    \PackageError\pxhe@pkgname
+     {Bad driver option}
+     {Package loading is aborted right now.}
+  \fi
+  \let\pxhe@begin@dvi@hook\@gobble
+\expandafter\endinput\fi\relax
+
+%% switch 'pxhe@new@hook@system'
+\newif\ifpxhe@new@hook@system
+\@ifl@t@r\fmtversion{2020/10/01}{\pxhe@new@hook@systemtrue}{}
+
+%% \pxhe@jcode
+\ifnum     \jis"2121="8140
+  \let\pxhe@jcode=s\relax
+\else\ifnum\jis"2121="A1A1
+  \let\pxhe@jcode=e\relax
+\else\ifnum\jis"2121="3000
+  \let\pxhe@jcode=u\relax
+\fi\fi\fi
+\ifx\pxhe@jcode\@undefined
+  \PackageError\pxhe@pkgname
+   {Unknown internal kanji code}
+   {Package loading is aborted right now.}
+  \expandafter\endinput
+\fi
+
+%--------------------------------------- begin-dvi hook (new)
+\ifpxhe@new@hook@system
+
+%% \pxhe@hook@label
+\def\pxhe@hook@label{pxjahyper/enc}
+
+%% \pxhe@begin@dvi@hook{<text>}
+\def\pxhe@begin@dvi@hook#1{%
+  \AddToHook{shipout/firstpage}[\pxhe@hook@label]{#1}%
+}
+
+%% declare necessary rules
+\DeclareHookRule{shipout/firstpage}{\pxhe@hook@label}{<}{hyperref}
+
+\fi
+%--------------------------------------- begin-dvi hook (old)
+\ifpxhe@new@hook@system\else
+
+%% packages
+\RequirePackage{atbegshi}[2011/10/05]% v1.16
+
+%% \pxhe@begin@dvi@hook{<text>}
+\def\pxhe@begin@dvi@hook#1{%
+  \begingroup
+    \toks\z@{#1}%
+    \toks\tw@\expandafter{\AtBegShi@HookFirst}%
+    \xdef\AtBegShi@HookFirst{\the\toks@\the\toks\tw@}%
+  \endgroup
+}
+
+\fi
+%--------------------------------------- default tounicode special
+
+%% \pxhe@cmap@name
+\def\pxhe@cmap@name{%
+  \if e\pxhe@jcode % euc
+    EUC-UCS2%
+  \else\if s\pxhe@jcode % sjis
+    90ms-RKSJ-UCS2%
+  \else\if t\pxhe@bigcode % ucs, bigcode
+    UTF8-UTF16%
+  \else % ucs, no bigcode
+    UTF8-UCS2%
+  \fi\fi\fi
+}
+
+%% \pxhe@do@default@tounicode
+\def\pxhe@do@default@tounicode{%
+  \if t\pxhe@default@tounicode
+    \special{pdf:tounicode \pxhe@cmap@name}%
+  \fi
+}
+\pxhe@begin@dvi@hook{\pxhe@do@default@tounicode}
+
+%--------------------------------------- done
+\endinput
+%% EOF
