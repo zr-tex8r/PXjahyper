@@ -250,13 +250,6 @@ pxhy@driver = \the\pxhy@driver^^J%
 \def\pxhy@end{\pxhy@end@}
 \let\pxhy@mk\indent % unexpandable
 
-%% \pxhy@out@special{<text>}
-\def\pxhy@out@special#1{%
-  \edef\pxhy@tmpa{%
-    \noexpand\pxhy@begin@dvi@enc@hook{\special{#1}}%
-  }\pxhy@tmpa
-}
-
 %% \pxhy@begin@dvi@hook{<text>}
 %% \pxhy@begin@dvi@enc@hook{<text>}
 \ifpxhy@new@hook@system
@@ -264,19 +257,8 @@ pxhy@driver = \the\pxhy@driver^^J%
     \AddToHook{shipout/firstpage}{#1}%
   }
   \DeclareHookRule{shipout/firstpage}{.}{>}{hyperref}
-  \def\pxhy@begin@dvi@enc@hook#1{% only once
-    \AddToHook{shipout/firstpage}[./enc]{#1}%
-    \DeclareHookRule{shipout/firstpage}{./enc}{<}{hyperref}%
-  }
 \else
   \RequirePackage{atbegshi}[2011/10/05]% v1.16
-\def\pxhy@begin@dvi@enc@hook#1{%
-  \begingroup
-    \toks\z@{#1}%
-    \toks\tw@\expandafter{\AtBegShi@HookFirst}%
-    \xdef\AtBegShi@HookFirst{\the\toks@\the\toks\tw@}%
-  \endgroup
-}
   \def\pxhy@begin@dvi@hook#1{%
     \AtBeginShipoutFirst{#1}%
   }
@@ -331,20 +313,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 
   \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
     %% dvipdfmx
-    \IfFileExists{pxjahyper-enc.sty}{% FIXME: TRANSIENT CODE
     \RequirePackage{pxjahyper-enc}[]%
     \ifpxhy@bigcode\else \suppressbigcode \fi
-    }{%else
-    \if e\pxhy@jcode % euc
-      \pxhy@out@special{pdf:tounicode EUC-UCS2}
-    \else\if s\pxhy@jcode % sjis
-      \pxhy@out@special{pdf:tounicode 90ms-RKSJ-UCS2}
-    \else\ifpxhy@bigcode % ucs, bigcode
-      \pxhy@out@special{pdf:tounicode UTF8-UTF16}
-    \else
-      \pxhy@out@special{pdf:tounicode UTF8-UCS2}
-    \fi\fi\fi
-    }%
   \fi                           %</dvipdfmx>
 
 \fi

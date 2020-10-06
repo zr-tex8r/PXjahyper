@@ -61,10 +61,9 @@
 
 %% check
 \ifx d\pxhe@driver\else
-  \ifx 0\pxhe@driver\else
-    \PackageError\pxhe@pkgname
-     {Bad driver option}
-     {Package loading is aborted right now.}
+  \ifx s\pxhe@driver
+    \PackageWarningNoLine\pxhe@pkgname
+     {Unsupported driver (dvips)}
   \fi
   \let\pxhe@begin@dvi@hook\@gobble
 \expandafter\endinput\fi\relax
