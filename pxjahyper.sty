@@ -570,13 +570,18 @@ pxhy@driver = \the\pxhy@driver^^J%
 \fi
 %--------------------------------------- Redefine text commands for PD1
 
+%% \pxhy@pdfenc
+\edef\pxhy@pdfenc{%
+  \ifpxhy@hy@unicode PU\else PD1\fi
+}
+
 \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
 
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
 \newcommand*\pxDeclarePdfTextCommand[3]{%
   \pxhy@decl@pdf@tc{#2}{#3}%
-   {\DeclareTextCommand{#1}{PD1}}%
+   {\DeclareTextCommand{#1}{\pxhy@pdfenc}}%
    {\pxhy@revoke@pdf@tc{#1}}%
 }
 
@@ -584,7 +589,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \@onlypreamble\pxDeclarePdfTextComposite
 \newcommand*\pxDeclarePdfTextComposite[4]{%
   \pxhy@decl@pdf@tc{#3}{#4}%
-   {\DeclareTextCompositeCommand{#1}{PD1}{#2}}%
+   {\DeclareTextCompositeCommand{#1}{\pxhy@pdfenc}{#2}}%
    {\pxhy@revoke@pdf@tcc{#1}{#2}}%
 }
 
@@ -600,8 +605,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 %% \pxhy@revoke@pdf@tc
 \@onlypreamble\pxhy@revoke@pdf@tc
 \def\pxhy@revoke@pdf@tc#1{%
-  \expandafter\let\csname PD1\string#1\endcsname\@undefined
-  \pxhy@make@txtcmd\pxhy@tmpa{PD1}#1%
+  \expandafter\let\csname\pxhy@pdfenc\string#1\endcsname\@undefined
+  \pxhy@make@txtcmd\pxhy@tmpa{\pxhy@pdfenc}#1%
   \ifx#1\pxhy@tmpa
     \pxhy@make@txtcmd#1?#1%
   \fi
@@ -617,8 +622,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 %% \pxhy@revoke@pdf@tcc
 \@onlypreamble\pxhy@revoke@pdf@tc
 \def\pxhy@revoke@pdf@tcc#1#2{%
-  \expandafter\let\csname\string\PD1\string#1-\string#2%
-   \endcsname\@undefined
+  \expandafter\let\csname\@backslashchar\pxhy@pdfenc
+   \string#1-\string#2\endcsname\@undefined
 }
 
 %% \pxhy@decl@pdf@tc
@@ -668,6 +673,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \fi                             %</upTeX>
 
 %%%%%%%%%%%%%%%%%%%% the definitions
+\ifpxhy@hy@unicode\else         %<!*unicode>
 
 % JIS X 0213 does not distinguish the following pairs:
 %  - circumflex(U+02C6) and asciicircum(U+005E)
@@ -836,7 +842,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 \pxDeclarePdfTextCommand{\th}{}{00FE}
 \pxDeclarePdfTextComposite{\"}{y}{}{00FF}
 \pxDeclarePdfTextCommand{\textcelsius}{216E}{2103}
-%%%%%%%%
+%%
 
 %%[B] Aliases to [A].
 %\pxDeclarePdfTextCommand{\copyright}{}{00A9}
