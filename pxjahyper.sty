@@ -10,34 +10,32 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2020/10/10 v0.6a]
+\ProvidesPackage{pxjahyper}[2020/10/10 v0.7-pre]
+\def\pxhy@pkgname{pxjahyper}
+\providecommand{\bxDebug}[1]{}
+
+%--------------------------------------- Preparations
 
 %% error messages
-\def\pxhy@pkgname{pxjahyper}
-\def\pxhy@warn{\PackageWarningNoLine\pxhy@pkgname}
 \def\pxhy@error{\PackageError\pxhy@pkgname}
-\@onlypreamble\pxhy@fatal
-\def\pxhy@fatal#1#2{%
-  \PackageError\pxhy@pkgname
-   {#1}%
-   {#2Package loading is aborted right now.}%
+\@onlypreamble\pxhy@eh@fatal
+\def\pxhy@eh@fatal{%
+  Package loading is aborted right now.\MessageBreak\@ehc
 }
-\providecommand{\bxDebug}[1]{}
 
 %% packages
 \RequirePackage{ltxcmds}[2011/08/22]% v1.21
 
-%% globals
+%% variables
 \newif\ifpxhy@ptex
 \newif\ifpxhy@uptex
 \newif\ifpxhy@etex
 \newif\ifpxhy@etoolbox
 \newif\ifpxhy@new@hook@system
-\let\pxhy@jcode\@undefined
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@zerox
 \newif\ifpxhy@bigcode
-\let\pxhy@bigcode\relax
+\let\pxhy@bigcode@given\relax
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \let\pxhy@driver\@undefined
@@ -76,11 +74,13 @@
 \DeclareOption{noout2uni}{%
   \pxhy@zeroxfalse
 }
+\pxhy@bigcodetrue
 \DeclareOption{bigcode}{%
-  \let\pxhy@bigcode=t%
+  \pxhy@bigcodetrue
+  \let\pxhy@bigcode@given=t
 }
 \DeclareOption{nobigcode}{%
-  \let\pxhy@bigcode=f%
+  \pxhy@bigcodefalse
 }
 \DeclareOption{jacommentline}{%
   \pxhy@jacommentlinetrue
@@ -119,7 +119,8 @@
 
 %% The hyperref package must be loaded in advance.
 \@ifpackageloaded{hyperref}{}{%else
-  \pxhy@fatal{'hyperref' not yet loaded}{}%
+  \pxhy@error{Package 'hyperref' is not yet loaded}
+   {\pxhy@eh@fatal}%
   \endinput
 }
 
@@ -136,8 +137,8 @@
   \fi
   \ifnum0\ifpxhy@hy@unicode1\fi\if@tempswa1\fi=1
     \PackageError\pxhy@pkgname
-     {You must not change the encoding setting (e.g.\MessageBreak
-      'unicode) of hyperref after pxjahyper is loaded}%
+     {You must not change the encoding setting of hyperref\MessageBreak
+      (e.g. 'unicode') after pxjahyper is loaded}%
      {\@ehc}%
   \fi
 }
@@ -166,47 +167,31 @@
 \pxhy@check\kanjiskip{\pxhy@ptextrue}
 \pxhy@check\forcecjktoken{\pxhy@uptextrue}
 \ifpxhy@ptex\else
-  \pxhy@fatal{Unknown engine used!!!}{}
+  \pxhy@error{Unknown engine used}%
+   {\pxhy@eh@fatal}
   \expandafter\endinput
 \fi
 
 %% Check for the new hook system.
 \@ifl@t@r\fmtversion{2020/10/01}{\pxhy@new@hook@systemtrue}{}
 
-%% Check the internal jcode.
-\ifnum     \jis"2121="8140
-  \let\pxhy@jcode=s\relax
-\else\ifnum\jis"2121="A1A1
-  \let\pxhy@jcode=e\relax
-\else\ifnum\jis"2121="3000
-  \let\pxhy@jcode=u\relax
-\fi\fi\fi
-\ifx\pxhy@jcode\@undefined
-  \pxhy@fatal{Unknown internal kanji code!!!}{}
-  \expandafter\endinput
-\fi
-
 %% adjustment
 % upTeX not in unicode is not seen as upTeX.
-\if u\pxhy@jcode\else
+\ifnum\jis"2121="3000 \else
   \pxhy@uptexfalse
 \fi
 % out2uni cannot be used with upTeX.
 \ifpxhy@uptex \ifpxhy@zerox
-  \pxhy@warn{out2uni is invalid in upTeX}
+  \PackageWarningNoLine\pxhy@pkgname
+   {out2uni is invalid in upTeX}
   \pxhy@zeroxfalse
 \fi\fi
 % bigcode cannot be used without upTeX.
-\if t\pxhy@bigcode
-  \ifpxhy@uptex
-    \pxhy@bigcodetrue
-  \else
-    \pxhy@warn{bigcode is invalid without upTeX}
-  \fi
-\else\if f\pxhy@bigcode
-\else
-  \ifpxhy@uptex
-    \pxhy@bigcodetrue
+\ifpxhy@bigcode \ifpxhy@uptex\else
+  \pxhy@bigcodefalse
+  \ifx t\pxhy@bigcode@given
+    \PackageWarningNoLine\pxhy@pkgname
+     {bigcode is invalid without upTeX}
   \fi
 \fi\fi
 % out2uni disables tounicode.
@@ -215,7 +200,10 @@
 \fi
 % hyperref 'unicode' is allowed only on upLaTeX.
 \ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
-  \pxhy@fatal{hyperref 'unicode' mode is not supported}{}%
+  \PackageError\pxhy@pkgname
+   {The hyperref 'unicode' mode is not supported\MessageBreak
+    on the pTeX engine}%
+   {\pxhy@eh@fatal}%
   \expandafter\endinput
 \fi
 % otfmacros forces use of otfcid.
@@ -238,7 +226,8 @@ pxhy@uptex = \ifpxhy@uptex true\else false\fi^^J%
 pxhy@etex = \ifpxhy@etex true\else false\fi^^J%
 pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
 pxhy@new@hook@system = \ifpxhy@new@hook@system true\else false\fi^^J%
-pxhy@jcode = \meaning\pxhy@jcode^^J%
+ifpxhy@hy@unicode = \ifpxhy@hy@unicode true\else false\fi^^J%
+pxhy@bigcode = \ifpxhy@bigcode true\else false\fi^^J%
 pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
 pxhy@zerox = \ifpxhy@zerox true\else false\fi^^J%
 pxhy@driver = \the\pxhy@driver^^J%
@@ -248,10 +237,10 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 %% unique tokens
 \def\pxhy@end{\pxhy@end@}
+\def\pxhy@mt{\pxhy@mt@}
 \let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@begin@dvi@hook{<text>}
-%% \pxhy@begin@dvi@enc@hook{<text>}
 \ifpxhy@new@hook@system
   \def\pxhy@begin@dvi@hook#1{%
     \AddToHook{shipout/firstpage}{#1}%
@@ -351,10 +340,15 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 %--------------------------------------- Hooks to pdfstringdef
 
+%% constants
 \def\pxhy@uc@REPL{FFFD}
 \def\pxhy@uc@XNAC{FDD1} % not-a-char codepoint used as marker
+
+%% variables
+\let\pxhy@str\relax
+
+%% \pxhy@burst-`>...
 \let\pxhy@burst\romannumeral
-\let\pxhy@nxend\indent
 
 %% \pxhy@uchex{<hex>}
 % The entity of the code-value input function. If the input
@@ -362,19 +356,19 @@ pxhy@driver = \the\pxhy@driver^^J%
 % \pxhy@uchex@res in 4-6 digits; otherwise passes FFFD to
 % \pxhy@uchex@res.
 \def\pxhy@uchex#1{%
-  \expandafter\pxhy@uchex@a\pxhy@burst-`>#1\pxhy@nxend
+  \expandafter\pxhy@uchex@a\pxhy@burst-`>#1\pxhy@mk
 }
 \edef\pxhy@uchex@err{%
   \noexpand\pxhy@uchex@res{\pxhy@uc@REPL}%
 }
-\def\pxhy@uchex@a#1#2\pxhy@nxend{%
+\def\pxhy@uchex@a#1#2\pxhy@mk{%
   \ifnum2<"1#1
-    \expandafter\pxhy@uchex@b\romannumeral-"#1#2\pxhy@nxend{#1#2}%
+    \expandafter\pxhy@uchex@b\romannumeral-"#1#2\pxhy@mk{#1#2}%
   \else \pxhy@uchex@err
   \fi
 }
-\def\pxhy@uchex@b#1\pxhy@nxend#2{%
-  \ifx\pxhy@empty#1\pxhy@empty
+\def\pxhy@uchex@b#1\pxhy@mk#2{%
+  \ifx\pxhy@mt#1\pxhy@mt
     \ifnum"#2>"10FFFF
       \pxhy@uchex@err
     \else\ifnum"#2>"FFF
@@ -422,7 +416,7 @@ pxhy@driver = \the\pxhy@driver^^J%
       \pxhy@posthook@b##1%
     }%
     \def\pxhy@posthook@a##1#1##2\pxhy@end{%
-      \ifx\pxhy@empty##2\pxhy@empty
+      \ifx\pxhy@mt##2\pxhy@mt
         \expandafter\@gobbletwo
       \fi
     }%
@@ -432,7 +426,7 @@ pxhy@driver = \the\pxhy@driver^^J%
       \global\let##1=\pxhy@str
     }%
     \def\pxhy@posthook@c##1#1##2>{%
-      \ifx\pxhy@empty##2\pxhy@empty
+      \ifx\pxhy@mt##2\pxhy@mt
         \edef\pxhy@str{\pxhy@str##1}%
       \else
         \pxhy@get@jchar{"##2}%
