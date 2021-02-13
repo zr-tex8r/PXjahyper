@@ -402,6 +402,15 @@ pxhy@driver = \the\pxhy@driver^^J%
     \let\UTFT\pxhy@uchex
   }
 
+  \ifpxhy@hy@unicode            %<*unicode>
+
+    %% \pxhy@uchex@res
+    \def\pxhy@uchex@res#1{%
+      \unichar{"#1}%
+    }
+
+  \else                       %<!*unicode>
+
   %BEGIN-- in the following block #1 means the marker
   \def\pxhy@next#1{% #1=marker
     %% \pxhy@uchex@res
@@ -449,6 +458,8 @@ pxhy@driver = \the\pxhy@driver^^J%
     }%
     \pxhy@next
   \endgroup
+
+  \fi                         %</unicode>
 
 \else\ifpxhy@zerox              %<*!upTeX>
 
@@ -1064,12 +1075,14 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi
 
+\fi                             %</unicode>
+%%%%%%%%%%%%%%%%%%%% done
+
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
 \PackageInfo\pxhy@pkgname
- {The setup for hyperref 'unicode' is applied.\MessageBreak
-  (Note that this feature is experimental.)\@gobbletwo}
+ {The setup for hyperref 'unicode' is applied.\@gobbletwo}
 
 %% The following code is taken from hyperref.sty.
 %%%%BEGIN
