@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2021/02/13 v0.7]
+\ProvidesPackage{pxjahyper}[2021/02/23 v0.7a]
 \def\pxhy@pkgname{pxjahyper}
 \providecommand{\bxDebug}[1]{}
 
@@ -540,7 +540,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   }%
   \ifpxhy@otfmacros
     \ifx\ajSnowman\@undefined\else % ajmacros is loaded
-      \makeatletter
+      \chardef\pxhy@tmp@orgcc=\catcode`\@
       \InputIfFileExists{pxjahyper-ajm.def}{%
         \PackageInfo\pxhy@pkgname
          {Loaded 'pxjahyper-ajm.def'\@gobble}%
@@ -548,7 +548,7 @@ pxhy@driver = \the\pxhy@driver^^J%
         \PackageWarning\pxhy@pkgname
          {File 'pxjahyper-ajm.def' not found\@gobble}%
       }%
-      \makeatother
+      \catcode`\@=\pxhy@tmp@orgcc
     \fi
   \fi
 }
