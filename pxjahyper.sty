@@ -541,6 +541,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \ifpxhy@otfmacros
     \ifx\ajSnowman\@undefined\else % ajmacros is loaded
       \chardef\pxhy@tmp@orgcc=\catcode`\@
+      \makeatletter
       \InputIfFileExists{pxjahyper-ajm.def}{%
         \PackageInfo\pxhy@pkgname
          {Loaded 'pxjahyper-ajm.def'\@gobble}%
