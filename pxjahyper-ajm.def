@@ -645,7 +645,7 @@
 
 %% ad-hoc redefinitions
 \pxhy@DeclareMacro{DKunoji}{\UTF{3032}}
-\pxhy@DeclareMacro{KunojiwithBou}{\UTF{3032}}
+\pxhy@DeclareMacro{DKunojiwithBou}{\UTF{3032}}
 \pxhy@DeclareMacro{Kunoji}{\UTF{3031}}
 \pxhy@DeclareMacro{KunojiwithBou}{\UTF{3031}}
 \pxhy@DeclareMacro{Yusuriten}{\CID{16193}}
