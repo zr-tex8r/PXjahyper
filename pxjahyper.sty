@@ -36,6 +36,7 @@
 \newif\ifpxhy@zerox
 \newif\ifpxhy@bigcode
 \let\pxhy@bigcode@given\relax
+\newif\ifpxhy@papersize
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \let\pxhy@driver\@undefined
@@ -73,6 +74,12 @@
 }
 \DeclareOption{noout2uni}{%
   \pxhy@zeroxfalse
+}
+\DeclareOption{papersize}{%
+  \pxhy@papersizetrue
+}
+\DeclareOption{nopapersize}{%
+  \pxhy@papersizefalse
 }
 \pxhy@bigcodetrue
 \DeclareOption{bigcode}{%
@@ -198,6 +205,10 @@
 \ifpxhy@zerox
   \pxhy@tounicodefalse
 \fi
+%% pxhy@papersize switch
+\ifnum\pxhy@driver=\pxhy@driver@none
+  \pxhy@papersizefalse
+\fi
 % hyperref 'unicode' is allowed only on upLaTeX.
 \ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
   \PackageError\pxhy@pkgname
@@ -322,6 +333,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 
 \fi
 %--------------------------------------- Papersize special adjustment
+\ifpxhy@papersize               %<*papersize>
 
 % When the magnification is in effect (i.e. \mag<>1000), hyperref
 % emits a papersize special with wrong value. (dvipdfmx interprets
@@ -352,6 +364,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 \fi
 
+\fi                             %</papersize>
 %--------------------------------------- Hooks to pdfstringdef
 
 %% constants
