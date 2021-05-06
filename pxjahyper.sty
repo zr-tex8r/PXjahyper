@@ -482,11 +482,11 @@ pxhy@driver = \the\pxhy@driver^^J%
 %--------------------------------------- Support for 'otfcid'
 \ifpxhy@otfcid
 
-%% variables
+%% \pxhy@otfcid@disabled
+% Holds the message if otfcid/otfmacros is unavailable;
+% otherwise equals to \relax.
 \@onlypreamble\pxhy@otfcid@disabled
 \let\pxhy@otfcid@disabled\relax
-
-%% preparation
 \ifpxhy@etoolbox
   % check if bxjatoucs is available
   \IfFileExists{bxjatoucs.sty}{%
@@ -508,10 +508,10 @@ pxhy@driver = \the\pxhy@driver^^J%
     e-TeX extension is unavailable%
   }
 \fi\fi
+
 %% annihilate the ajmacros's own pdfstring process
 \ifpxhy@otfmacros\ifx\pxhy@otfcid@disabled\relax
   \let\ajRedefine@ajCommands\relax
-  \AtBeginDocument{\let\ajRedefine@ajCommands\relax}
 \fi\fi
 
 %% \pxhy@CID{<cid>}
@@ -535,11 +535,25 @@ pxhy@driver = \the\pxhy@driver^^J%
 %% \pxhy@dispatch@otfcid
 \@onlypreamble\pxhy@dispatch@otfcid
 \def\pxhy@dispatch@otfcid{%
-  \pdfstringdefDisableCommands{%
-    \let\CID\pxhy@CID
-  }%
-  \ifpxhy@otfmacros
-    \ifx\ajSnowman\@undefined\else % ajmacros is loaded
+  \global\let\pxhy@dispatch@otfcid\relax
+  \ifx\pxhy@otfcid@disabled\relax % available!
+    \pdfstringdefDisableCommands{%
+      \let\CID\pxhy@CID
+    }%
+  \else
+    \PackageWarningNoLine\pxhy@pkgname
+     {Option 'otfcid'/'otfmacros' is disabled, because\MessageBreak
+      \pxhy@otfcid@disabled}%
+    \pxhy@otfcidfalse
+  \fi
+}
+
+%% \pxhy@dispatch@otfmacros
+\@onlypreamble\pxhy@dispatch@otfmacros
+\def\pxhy@dispatch@otfmacros{%
+  \global\let\pxhy@dispatch@otfmacros\relax
+  \ifx\pxhy@otfcid@disabled\relax % available!
+      \let\ajRedefine@ajCommands\relax
       \chardef\pxhy@tmp@orgcc=\catcode`\@
       \makeatletter
       \InputIfFileExists{pxjahyper-ajm.def}{%
@@ -550,22 +564,20 @@ pxhy@driver = \the\pxhy@driver^^J%
          {File 'pxjahyper-ajm.def' not found\@gobble}%
       }%
       \catcode`\@=\pxhy@tmp@orgcc
-    \fi
+  \else \pxhy@otfmacrosfalse
   \fi
 }
 
 %% begin-document hook
 \AtBeginDocument{%
   \@ifpackageloaded{otf}{%
-    \ifx\pxhy@otfcid@disabled\relax % available!
-      \pxhy@dispatch@otfcid
-    \else
-      \PackageWarningNoLine\pxhy@pkgname
-       {Option 'otfcid'/'otfmacros' is disabled, because\MessageBreak
-        \pxhy@otfcid@disabled}%
-      \pxhy@otfcidfalse
-    \fi
+    \pxhy@dispatch@otfcid
   }{}%
+  \ifpxhy@otfmacros
+    \@ifpackageloaded{ajmacros}{%
+      \pxhy@dispatch@otfmacros
+    }{}%
+  \fi
 }
 
 \fi
