@@ -271,6 +271,20 @@ pxhy@driver = \the\pxhy@driver^^J%
   \let\pxhy@forcecjktoken\relax
 \fi
 
+%% \pxhy@hook@after@package{<package-name>}{<code>}
+\@onlypreamble\pxhy@hook@after@package
+\def\pxhy@hook@after@package#1#2{%
+  \ifpxhy@new@hook@system
+    \@ifpackageloaded{#1}{#2}{%
+      \AddToHook{package/after/#1}{#2}%
+    }%
+  \else
+    \AtBeginDocument{%
+      \@ifpackageloaded{#1}{#2}{}%
+    }%
+  \fi
+}
+
 %--------------------------------------- Helpers (e-TeX)
 \ifpxhy@etex
 
@@ -568,17 +582,11 @@ pxhy@driver = \the\pxhy@driver^^J%
   \fi
 }
 
-%% begin-document hook
-\AtBeginDocument{%
-  \@ifpackageloaded{otf}{%
-    \pxhy@dispatch@otfcid
-  }{}%
-  \ifpxhy@otfmacros
-    \@ifpackageloaded{ajmacros}{%
-      \pxhy@dispatch@otfmacros
-    }{}%
-  \fi
-}
+%% enable hooks
+\pxhy@hook@after@package{otf}{\pxhy@dispatch@otfcid}
+\ifpxhy@otfmacros
+  \pxhy@hook@after@package{ajmacros}{\pxhy@dispatch@otfmacros}
+\fi
 
 \fi
 %--------------------------------------- Redefine text commands for PD1
