@@ -199,12 +199,6 @@
 \ifnum\jis"2121="3000 \else
   \pxhy@uptexfalse
 \fi
-% out2uni cannot be used with upTeX.
-\ifpxhy@uptex \ifpxhy@uniescape
-  \PackageWarningNoLine\pxhy@pkgname
-   {out2uni is invalid in upTeX}
-  \pxhy@uniescapefalse
-\fi\fi
 % bigcode cannot be used without upTeX.
 \ifpxhy@bigcode \ifpxhy@uptex\else
   \pxhy@bigcodefalse
