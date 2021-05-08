@@ -45,6 +45,7 @@
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
 \newif\ifpxhy@disablecmds
+\newif\ifpxhy@otfutf
 \newif\ifpxhy@otfcid
 \newif\ifpxhy@otfmacros
 
@@ -109,6 +110,12 @@
 \DeclareOption{nodisablecmds}{%
   \pxhy@disablecmdsfalse
 }
+\DeclareOption{otfutf}{%
+  \pxhy@otfutftrue
+}
+\DeclareOption{nootfutf}{%
+  \pxhy@otfutffalse
+}
 \pxhy@otfcidtrue
 \DeclareOption{otfcid}{%
   \pxhy@otfcidtrue
@@ -127,7 +134,7 @@
 }
 %% dispatch
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,papersize,jacommentline,disablecmds%
+  auto,tounicode,noout2uni,papersize,jacommentline,disablecmds,otfutf%
 }
 \ProcessOptions*
 
@@ -226,6 +233,10 @@
    {\pxhy@eh@fatal}%
   \expandafter\endinput
 \fi
+\ifpxhy@hy@unicode
+  \pxhy@uniescapefalse
+  \pxhy@otfutftrue
+\fi
 % otfmacros forces use of otfcid.
 \ifpxhy@otfmacros
   \pxhy@otfcidtrue
@@ -238,6 +249,13 @@
      {Option 'otfcid'/'otfmacros' is invalid\MessageBreak
       unless upTeX is used or 'out2uni' is specified}
   \fi
+\fi\fi
+% otfcid requrires otfutf.
+\ifpxhy@otfutf \else \ifpxhy@otfcid
+  \PackageInfo\pxhy@pkgname
+   {Option 'nootfcid' is assumed\MessageBreak
+    because 'nootfutf' is effective\@gobble}
+  \pxhy@otfcidfalse
 \fi\fi
 
 \bxDebug{****pxjahyper env^^J%
@@ -292,6 +310,10 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \else
   \let\pxhy@forcecjktoken\relax
 \fi
+
+%% \pxhy@geta : GETA MARK
+\pxhy@get@jchar{\jis"222E}
+\let\pxhy@geta\pxhy@jchar
 
 %% \pxhy@hook@after@package{<package-name>}{<code>}
 \@onlypreamble\pxhy@hook@after@package
@@ -537,30 +559,28 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %% variables
 \let\pxhy@str\relax
 
-\ifpxhy@uptex                   %<*upTeX>
+%% \pxhy@Ux
+% The definition of \Ux in PDF strings.
+\let\pxhy@Ux\@undefined
+
+\ifpxhy@hy@unicode              %<*unicode>
+
+  %% \pxhy@Ux
+  \def\pxhy@Ux{\pxhy@uchex}%
+  \pxhy@utfXVIfalse
+  \def\pxhy@uchex@out#1{%
+    \unichar{"#1}%
+  }
+
+\else\ifpxhy@uptex              %<*upTeX>
+
+  %% \pxhy@Ux
+  \def\pxhy@Ux{\pxhy@uchex}%
+  \pxhy@utfXVIfalse
 
   %% \pxhy@marker: a not-a-char U+FDD1
   \pxhy@get@jchar{\ucs"\pxhy@uc@XNAC}
   \edef\pxhy@marker{\pxhy@jchar}
-
-  %% Makes \Ux and \UTF be the code input command in PDF strings.
-  \pdfstringdefDisableCommands{%
-    \let\Ux\pxhy@uchex
-    \let\UTF\pxhy@uchex
-    \let\UTFM\pxhy@uchex
-    \let\UTFK\pxhy@uchex
-    \let\UTFC\pxhy@uchex
-    \let\UTFT\pxhy@uchex
-  }
-
-  \ifpxhy@hy@unicode            %<*unicode>
-
-    %% \pxhy@uchex@out
-    \def\pxhy@uchex@out#1{%
-      \unichar{"#1}%
-    }
-
-  \else                       %<!*unicode>
 
   %BEGIN-- in the following block #1 means the marker
   \def\pxhy@next#1{% #1=marker
@@ -610,28 +630,62 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
     \pxhy@next
   \endgroup
 
-  \fi                         %</unicode>
+\fi\fi                          %</>
 
-\else\ifpxhy@uniescape              %<*!upTeX>
+\ifpxhy@uniescape               %<*uniescape>
 
+  %% \pxhy@Ux
+  \def\pxhy@Ux{\pxhy@uchex}%
+  % \pxhy@uchex converts to UTF-16
   \pxhy@utfXVItrue
-
-  %% \pxhy@uchex@out
-  % Expands to \0x form.
   \def\pxhy@uchex@out#1{%
+    % Expands to \0x form.
     \0x#1%
   }
 
-  %% Makes \Ux be the code input command in PDF strings.
-  % (If the otf package is loaded, then \UTF already does
-  % the same thing.)
+\fi                             %</uniescape>
+
+%% Makes \Ux be the code input command in PDF strings.
+\ifx\pxhy@Ux\@undefined\else
   \pdfstringdefDisableCommands{%
-    \let\Ux\pxhy@uchex
+    \let\Ux\pxhy@Ux
   }
+\fi
 
-  %Note: if out2uni is off then \Ux remains undefined.
-\fi\fi                          %</upTeX>
+%--------------------------------------- Support for 'otfutf'
+\ifpxhy@otfutf
 
+%% \pxhy@UTF
+% The definition of \UTF in PDF strings.
+\ifx\pxhy@Ux\@undefined
+  % Use a fallback definition.
+  \def\pxhy@UTF{\pxhy@uchex}
+  \pxhy@utfXVIfalse
+  \def\pxhy@uchex@out#1{%
+    \@nameuse{U+#1}% issue a warning
+    \pxhy@geta
+  }
+\else
+  \let\pxhy@UTF\pxhy@Ux
+\fi
+
+%% \pxhy@dispatch@otfutf
+\@onlypreamble\pxhy@dispatch@otfutf
+\def\pxhy@dispatch@otfutf{%
+  \global\let\pxhy@dispatch@otfutf\relax
+  \pdfstringdefDisableCommands{%
+    \let\UTF\pxhy@uchex
+    \let\UTFM\pxhy@uchex
+    \let\UTFK\pxhy@uchex
+    \let\UTFC\pxhy@uchex
+    \let\UTFT\pxhy@uchex
+  }
+}
+
+%% enable hooks
+\pxhy@hook@after@package{otf}{\pxhy@dispatch@otfutf}
+
+\fi
 %--------------------------------------- Support for 'otfcid'
 \ifpxhy@otfcid
 
