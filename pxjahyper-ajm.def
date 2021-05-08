@@ -35,11 +35,6 @@
 %% \pxhy@ : the prefix
 \def\pxhy@{pxhy@aj@@}
 
-%% \pxhy@cond\ifXXX...\fi{<yes>}{<no>}
-\@gobbletwo\if\if \def\pxhy@cond#1\fi{%
-  #1\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
-}
-
 %% \pxhy@cond@both\ifXXX...\fi\ifYYY...\fi{<yes>}{<no>}
 % Checks whether \ifXXX and \ifYYY both hold.
 \@gobbletwo\if\if\@gobbletwo\if\if \def\pxhy@cond@both#1\fi#2\fi{%

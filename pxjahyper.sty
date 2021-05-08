@@ -33,12 +33,14 @@
 \newif\ifpxhy@etoolbox
 \newif\ifpxhy@new@hook@system
 \newif\ifpxhy@tounicode
-\newif\ifpxhy@zerox
+\newif\ifpxhy@uniescape
 \newif\ifpxhy@bigcode
 \let\pxhy@bigcode@given\relax
 \newif\ifpxhy@papersize
+\newif\ifpxhy@textcmd
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
+\chardef\pxhy@driver@dvips=2
 \let\pxhy@driver\@undefined
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
@@ -48,20 +50,25 @@
 
 %--------------------------------------- Package options
 
+%% DVI drivers
 \DeclareOption{dvipdfmx}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
 }
 \DeclareOption{dvipdfm}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
 }
+\DeclareOption{dvips}{%
+  \let\pxhy@driver\pxhy@driver@dvips
+}
 \DeclareOption{nodvidriver}{%
   \let\pxhy@driver\pxhy@driver@none
 }
+%% modes
 \DeclareOption{none}{%
-  \let\pxhy@driver\pxhy@driver@none
+  \let\pxhy@driver\pxhy@driver@none %FIXME
 }
 \DeclareOption{auto}{%
-  \let\pxhy@driver\@undefined
+  \let\pxhy@driver\@undefined %FIXME
 }
 \DeclareOption{tounicode}{%
   \pxhy@tounicodetrue
@@ -70,11 +77,12 @@
   \pxhy@tounicodefalse
 }
 \DeclareOption{out2uni}{%
-  \pxhy@zeroxtrue
+  \pxhy@uniescapetrue
 }
 \DeclareOption{noout2uni}{%
-  \pxhy@zeroxfalse
+  \pxhy@uniescapefalse
 }
+%% others
 \DeclareOption{papersize}{%
   \pxhy@papersizetrue
 }
@@ -117,8 +125,9 @@
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
 }
+%% dispatch
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,jacommentline,disablecmds%
+  auto,tounicode,noout2uni,papersize,jacommentline,disablecmds%
 }
 \ProcessOptions*
 
@@ -152,11 +161,14 @@
 
 %% Check hyperref driver.
 \ifx\pxhy@driver\@undefined
+  \let\pxhy@driver\pxhy@driver@none
   \def\pxhy@tmpa{hdvipdfm}
   \ifx\Hy@driver\pxhy@tmpa
     \let\pxhy@driver\pxhy@driver@dvipdfmx
-  \else
-    \let\pxhy@driver\pxhy@driver@none
+  \fi
+  \def\pxhy@tmpa{hdvips}
+  \ifx\Hy@driver\pxhy@tmpa
+    \let\pxhy@driver\pxhy@driver@dvips
   \fi
 \fi
 
@@ -188,10 +200,10 @@
   \pxhy@uptexfalse
 \fi
 % out2uni cannot be used with upTeX.
-\ifpxhy@uptex \ifpxhy@zerox
+\ifpxhy@uptex \ifpxhy@uniescape
   \PackageWarningNoLine\pxhy@pkgname
    {out2uni is invalid in upTeX}
-  \pxhy@zeroxfalse
+  \pxhy@uniescapefalse
 \fi\fi
 % bigcode cannot be used without upTeX.
 \ifpxhy@bigcode \ifpxhy@uptex\else
@@ -201,14 +213,17 @@
      {bigcode is invalid without upTeX}
   \fi
 \fi\fi
-% out2uni disables tounicode.
-\ifpxhy@zerox
-  \pxhy@tounicodefalse
-\fi
 %% pxhy@papersize switch
 \ifnum\pxhy@driver=\pxhy@driver@none
   \pxhy@papersizefalse
 \fi
+%% pxhy@textcmd switch
+\ifnum\pxhy@driver=\pxhy@driver@none
+  \pxhy@textcmdfalse
+\else
+  \pxhy@textcmdtrue
+\fi
+
 % hyperref 'unicode' is allowed only on upLaTeX.
 \ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
   \PackageError\pxhy@pkgname
@@ -222,7 +237,7 @@
   \pxhy@otfcidtrue
 \fi
 % otfcid requires upTeX or out2uni.
-\ifpxhy@uptex\else\ifpxhy@zerox\else
+\ifpxhy@uptex\else\ifpxhy@uniescape\else
   \pxhy@otfcidfalse
   \ifx t\pxhy@otfcid@given
     \PackageWarningNoLine\pxhy@pkgname
@@ -239,9 +254,11 @@ pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
 pxhy@new@hook@system = \ifpxhy@new@hook@system true\else false\fi^^J%
 ifpxhy@hy@unicode = \ifpxhy@hy@unicode true\else false\fi^^J%
 pxhy@bigcode = \ifpxhy@bigcode true\else false\fi^^J%
-pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
-pxhy@zerox = \ifpxhy@zerox true\else false\fi^^J%
 pxhy@driver = \the\pxhy@driver^^J%
+pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
+pxhy@uniescape = \ifpxhy@uniescape true\else false\fi^^J%
+pxhy@papersize = \ifpxhy@papersize true\else false\fi^^J%
+pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 }
 
 %--------------------------------------- Helpers
@@ -294,6 +311,18 @@ pxhy@driver = \the\pxhy@driver^^J%
       \@ifpackageloaded{#1}{#2}{}%
     }%
   \fi
+}
+
+%% \pxhy@triexpandafter
+\def\pxhy@triexpandafter{%
+  \expandafter\expandafter\expandafter
+}
+
+%% \pxhy@cond\ifXXX<arg>\fi{<true>}{<false>}
+% Does the test "\ifXXX<arg>", with immediate exit from the
+% induced if-level.
+\@gobbletwo\if\if \def\pxhy@cond#1\fi{%
+  #1\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
 }
 
 %--------------------------------------- Helpers (e-TeX)
@@ -365,14 +394,11 @@ pxhy@driver = \the\pxhy@driver^^J%
 \fi
 
 \fi                             %</papersize>
-%--------------------------------------- Hooks to pdfstringdef
+%--------------------------------------- Code input processor
 
 %% constants
 \def\pxhy@uc@REPL{FFFD}
 \def\pxhy@uc@XNAC{FDD1} % not-a-char codepoint used as marker
-
-%% variables
-\let\pxhy@str\relax
 
 %% \pxhy@burst-`>...
 \let\pxhy@burst\romannumeral
@@ -380,13 +406,13 @@ pxhy@driver = \the\pxhy@driver^^J%
 %% \pxhy@uchex{<hex>}
 % The entity of the code-value input function. If the input
 % is a valid code value in hex then it passes the value to
-% \pxhy@uchex@res in 4-6 digits; otherwise passes FFFD to
-% \pxhy@uchex@res.
+% \pxhy@uchex@out in 4-6 digits; otherwise passes FFFD to
+% \pxhy@uchex@out.
 \def\pxhy@uchex#1{%
   \expandafter\pxhy@uchex@a\pxhy@burst-`>#1\pxhy@mk
 }
 \edef\pxhy@uchex@err{%
-  \noexpand\pxhy@uchex@res{\pxhy@uc@REPL}%
+  \noexpand\pxhy@uchex@out{\pxhy@uc@REPL}%
 }
 \def\pxhy@uchex@a#1#2\pxhy@mk{%
   \ifnum2<"1#1
@@ -399,7 +425,7 @@ pxhy@driver = \the\pxhy@driver^^J%
     \ifnum"#2>"10FFFF
       \pxhy@uchex@err
     \else\ifnum"#2>"FFF
-      \pxhy@uchex@res{#2}%
+      \pxhy@uchex@out{#2}%
     \else
       \pxhy@uchex@c#2"000\pxhy@end
     \fi\fi
@@ -410,8 +436,13 @@ pxhy@driver = \the\pxhy@driver^^J%
   \pxhy@uchex@d#1#2#3#4#5\pxhy@end
 }
 \def\pxhy@uchex@d#1"#2\pxhy@end{%
-  \pxhy@uchex@res{#2#1}%
+  \pxhy@uchex@out{#2#1}%
 }
+
+%--------------------------------------- Hooks to pdfstringdef
+
+%% variables
+\let\pxhy@str\relax
 
 \ifpxhy@uptex                   %<*upTeX>
 
@@ -431,8 +462,8 @@ pxhy@driver = \the\pxhy@driver^^J%
 
   \ifpxhy@hy@unicode            %<*unicode>
 
-    %% \pxhy@uchex@res
-    \def\pxhy@uchex@res#1{%
+    %% \pxhy@uchex@out
+    \def\pxhy@uchex@out#1{%
       \unichar{"#1}%
     }
 
@@ -440,10 +471,10 @@ pxhy@driver = \the\pxhy@driver^^J%
 
   %BEGIN-- in the following block #1 means the marker
   \def\pxhy@next#1{% #1=marker
-    %% \pxhy@uchex@res
+    %% \pxhy@uchex@out
     % Expands to a tag string which will later be converted to
     % a real character in the postprocess.
-    \def\pxhy@uchex@res##1{#1##1>}%
+    \def\pxhy@uchex@out##1{#1##1>}%
     %% \pxhy@posthook
     % The postprocess of this package. It is registered to
     % \pdfstringdefPostHook.
@@ -488,11 +519,11 @@ pxhy@driver = \the\pxhy@driver^^J%
 
   \fi                         %</unicode>
 
-\else\ifpxhy@zerox              %<*!upTeX>
+\else\ifpxhy@uniescape              %<*!upTeX>
 
-  %% \pxhy@uchex@res
+  %% \pxhy@uchex@out
   % Expands to \0x form.
-  \def\pxhy@uchex@res#1{%
+  \def\pxhy@uchex@out#1{%
     \0x#1%
   }
 
@@ -609,7 +640,7 @@ pxhy@driver = \the\pxhy@driver^^J%
   \ifpxhy@hy@unicode PU\else PD1\fi
 }
 
-\ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*dvipdfmx>
+\ifpxhy@textcmd                 %<*textcmd>
 
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
@@ -627,14 +658,14 @@ pxhy@driver = \the\pxhy@driver^^J%
    {\pxhy@revoke@pdf@tcc{#1}{#2}}%
 }
 
-\else                           %<*!dvipdfmx>
+\else                           %<*!textcmd>
 
 \@onlypreamble\pxDeclarePdfTextCommand
 \newcommand*\pxDeclarePdfTextCommand[3]{}
 \@onlypreamble\pxDeclarePdfTextComposite
 \newcommand*\pxDeclarePdfTextComposite[4]{}
 
-\fi                             %</dvipdfmx>
+\fi                             %</textcmd>
 
 %% \pxhy@revoke@pdf@tc
 \@onlypreamble\pxhy@revoke@pdf@tc
@@ -685,7 +716,7 @@ pxhy@driver = \the\pxhy@driver^^J%
     \let\pxhy@body\pxhy@jchar
   }%
 \else                           %<*!upTeX>
-  \ifpxhy@zerox
+  \ifpxhy@uniescape
     \def\pxhy@get@body#1#2{%
       \ifx\pxhy@end#1\pxhy@end
         \def\pxhy@body{\0x#2}%
@@ -1108,7 +1139,7 @@ pxhy@driver = \the\pxhy@driver^^J%
 % ligatures, since otherwise hyperref leaves some garbage in
 % output pdf-strings when such ligatures appear.
 \ifpxhy@uptex\else
-  \ifpxhy@zerox\else
+  \ifpxhy@uniescape\else
     \DeclareTextCommand{\textendash}{PD1}{--}
     \DeclareTextCommand{\textquestiondown}{PD1}{}% empty
     \DeclareTextCommand{\textexclamdown}{PD1}{}% empty
