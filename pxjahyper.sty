@@ -394,43 +394,142 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \def\pxhy@uc@REPL{FFFD}
 \def\pxhy@uc@XNAC{FDD1} % not-a-char codepoint used as marker
 
+%% switch 'pxhy@utfXVI'
+% Whether or not to convert to UTF-16.
+\newif\ifpxhy@utfXVI
+
+%% Generate tables
+% - \pxhy@qh/XY -> Z ; \pxhy@hq/Z -> XY
+%   means XY (base-4) = Z (base-16)
+% - \pxhy@lhq/ZW -> XY
+%   ZW (base-16) - 1 = XY (base-4)
+% - \pxhy@hd/X
+%   uppercase of X if X is a (lower/uppercase) hexadecimal
+%   digit; otherwise undefined
+\def\pxhy@next#1#2#3#4#5{%
+  \@namedef{pxhy@qh/#1#2}{#3}%
+  \@namedef{pxhy@hq/#3}{#1#2}%
+  \@namedef{pxhy@lhq/#4#5}{#1#2}%
+}
+\@for\pxhy@tmpa:={%
+  00001,01102,02203,03304,10405,11506,12607,13708,%
+  20809,2190A,22A0B,23B0C,30C0D,31D0E,32E0F,33F10}\do{%
+  \expandafter\pxhy@next\pxhy@tmpa
+}
+\def\pxhy@next#1{%
+  \lowercase{\def\pxhy@tmpb{#1}}%
+  \@namedef{pxhy@hd/#1}{#1}%
+  \@namedef{pxhy@hd/\pxhy@tmpb}{#1}%
+}
+\@tfor\pxhy@tmpa:=0123456789ABCDEF\do{%
+  \expandafter\pxhy@next\pxhy@tmpa
+}
+
 %% \pxhy@burst-`>...
 \let\pxhy@burst\romannumeral
 
 %% \pxhy@uchex{<hex>}
-% The entity of the code-value input function. If the input
-% is a valid code value in hex then it passes the value to
-% \pxhy@uchex@out in 4-6 digits; otherwise passes FFFD to
-% \pxhy@uchex@out.
+% "Distills" the code-value input. If the input is a hex notation of
+% a valid code point of Unicode, then it passes the value to
+% \pxhy@uchex@out in zero-padded 4-6 digits; otherwise passes FFFD
+% to \pxhy@uchex@out.
+% Moreover, when the switch pxhy@utfXVI is true, then conversion into
+% UTF-16 is performed and each unit is passed to \pxhy@uchex@out
+% in zero-padded 4 digits.
 \def\pxhy@uchex#1{%
-  \expandafter\pxhy@uchex@a\pxhy@burst-`>#1\pxhy@mk
+  \pxhy@uchex@pre@a#1\relax{}\pxhy@mk\pxhy@end
 }
-\edef\pxhy@uchex@err{%
-  \noexpand\pxhy@uchex@out{\pxhy@uc@REPL}%
+\def\pxhy@uchex@pre@a{%
+  \expandafter\pxhy@uchex@pre@b\pxhy@burst-`>%
 }
-\def\pxhy@uchex@a#1#2\pxhy@mk{%
-  \ifnum2<"1#1
-    \expandafter\pxhy@uchex@b\romannumeral-"#1#2\pxhy@mk{#1#2}%
-  \else \pxhy@uchex@err
-  \fi
+\def\pxhy@uchex@pre@b#1#{%
+  \pxhy@cond \ifx\pxhy@mt#1\pxhy@mt \fi{%
+    \pxhy@uchex@bombout
+  }{%else
+    \pxhy@uchex@pre@c#1%
+  }%
 }
-\def\pxhy@uchex@b#1\pxhy@mk#2{%
-  \ifx\pxhy@mt#1\pxhy@mt
-    \ifnum"#2>"10FFFF
-      \pxhy@uchex@err
-    \else\ifnum"#2>"FFF
-      \pxhy@uchex@out{#2}%
-    \else
-      \pxhy@uchex@c#2"000\pxhy@end
-    \fi\fi
-  \else \pxhy@uchex@err
-  \fi
+\def\pxhy@uchex@pre@c#1{%
+  \pxhy@cond \ifx#1\relax \fi{%
+    \pxhy@uchex@pre@end
+  }{%else
+    \pxhy@triexpandafter\pxhy@uchex@pre@d
+        \csname pxhy@hd/\string#1\endcsname
+  }%
 }
-\def\pxhy@uchex@c#1#2#3#4#5#6\pxhy@end{%
-  \pxhy@uchex@d#1#2#3#4#5\pxhy@end
+\def\pxhy@uchex@pre@d#1{%
+  \pxhy@cond \ifx#1\relax \fi{%
+    \pxhy@uchex@bombout
+  }{%else
+    \pxhy@uchex@pre@e#1%
+  }%
 }
-\def\pxhy@uchex@d#1"#2\pxhy@end{%
+\def\pxhy@uchex@pre@e#1#2\pxhy@mk#3\pxhy@end{%
+  \pxhy@cond \if 0#1\fi{%
+    \pxhy@cond \ifx\pxhy@mt#3\pxhy@mt \fi{%
+      \pxhy@uchex@pre@a#2\pxhy@mk#3\pxhy@end
+    }{%else
+      \pxhy@uchex@pre@a#2\pxhy@mk#3#1\pxhy@end
+    }%
+  }{%else
+    \pxhy@uchex@pre@a#2\pxhy@mk#3#1\pxhy@end
+  }%
+}
+\def\pxhy@uchex@pre@end#1\pxhy@mk#2\pxhy@end{%
+  \pxhy@cond \ifx\pxhy@mt#1\pxhy@mt \fi{%
+    \pxhy@uchex@sw{#2}%
+  }{%else
+    \pxhy@uchex@error
+  }%
+}
+\def\pxhy@uchex@bombout#1\pxhy@end{%
+  \pxhy@uchex@error
+}
+
+\def\pxhy@uchex@sw#1{%
+  \pxhy@cond \ifnum"0#1>"10FFFF \fi{%
+    \pxhy@uchex@error
+  }{\pxhy@cond \ifnum"0#1>"FFFF \fi{%
+    \pxhy@cond \ifpxhy@utfXVI \fi{%
+      \pxhy@uchex@big#1"000000\pxhy@end
+    }{%else
+      \pxhy@uchex@out{#1}%
+    }%
+  }{%else
+    \pxhy@uchex@small#1"0000\pxhy@end
+  }}%
+}
+\def\pxhy@uchex@small#1#2#3#4#5#6\pxhy@end{%
+  \pxhy@uchex@small@a#1#2#3#4#5\pxhy@end
+}
+\def\pxhy@uchex@small@a#1"#2\pxhy@end{%
   \pxhy@uchex@out{#2#1}%
+}
+\def\pxhy@uchex@big#1#2#3#4#5#6#7#8\pxhy@end{%
+  \pxhy@uchex@big@a#1#2#3#4#5#6#7\pxhy@end
+}
+\def\pxhy@uchex@big@a#1"#2\pxhy@end{%
+  \pxhy@uchex@big@b#2#1\pxhy@end
+}
+\def\pxhy@uchex@big@b#1#2#3#4{%
+  \pxhy@triexpandafter\pxhy@uchex@big@c
+      \csname pxhy@lhq/#1#2\pxhy@triexpandafter\endcsname
+      \csname pxhy@hq/#3\pxhy@triexpandafter\endcsname
+      \csname pxhy@hq/#4\endcsname
+}
+\def\pxhy@uchex@big@c#1#2#3#4#5#6{%
+  \pxhy@triexpandafter\pxhy@uchex@big@d
+      \csname pxhy@qh/2#1\pxhy@triexpandafter\endcsname
+      \csname pxhy@qh/#2#3\pxhy@triexpandafter\endcsname
+      \csname pxhy@qh/#4#5\pxhy@triexpandafter\endcsname
+      \csname pxhy@qh/3#6\endcsname
+}
+\def\pxhy@uchex@big@d#1#2#3#4#5\pxhy@end{%
+  \pxhy@uchex@out{D#1#2#3}%
+  \pxhy@uchex@out{D#4#5}%
+}
+\edef\pxhy@uchex@error{%
+  \noexpand\pxhy@uchex@out{\pxhy@uc@REPL}%
 }
 
 %--------------------------------------- Hooks to pdfstringdef
@@ -514,6 +613,8 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
   \fi                         %</unicode>
 
 \else\ifpxhy@uniescape              %<*!upTeX>
+
+  \pxhy@utfXVItrue
 
   %% \pxhy@uchex@out
   % Expands to \0x form.
