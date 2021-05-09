@@ -138,6 +138,9 @@
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
 }
+\DeclareOption{force-unicode}{%
+  \let\pxhy@force@unicode=t
+}
 %% dispatch
 \ExecuteOptions{%
   auto,tounicode,papersize,jacommentline,disablecmds,otfutf,otfcid%
@@ -236,7 +239,8 @@
 \fi\fi
 
 % hyperref 'unicode' is allowed only on upLaTeX.
-\ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
+\ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else
+    \ifx t\pxhy@force@unicode\else1\fi\fi\fi>\z@
   \PackageError\pxhy@pkgname
    {The hyperref 'unicode' mode is not supported\MessageBreak
     on the pTeX engine}%
@@ -1325,6 +1329,9 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \PackageInfo\pxhy@pkgname
  {The setup for hyperref 'unicode' is applied.\@gobbletwo}
 
+\def\pxhy@tmpa#1{\@backslashchar 000#1}
+\ifx\HyPsd@Char\pxhy@tmpa
+\typeout{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}
 %% The following code is taken from hyperref.sty.
 %%%%BEGIN
   \def\HyPsd@Char#1{%
@@ -1363,6 +1370,26 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
     \IntCalcMod#1!256!!%
   }%
 %%%%END
+\fi
+
+\ifpxhy@uptex\else                      %<*pTeX>
+  \RequirePackage{bxjatoucs}[]
+  \def\HyPsd@Char#1{%
+    \ifnum`#1<128 %
+      \@backslashchar 000#1%
+    \else\ifnum`#1<256 %
+      \expandafter\HyPsd@CharTwoByte\number`#1!%
+    \else
+      \expandafter\HyPsd@CharTwoByte\number\pxhy@to@ucs{`#1}!%
+    \fi\fi
+  }%
+  \def\pxhy@to@ucs#1{"FFFD}
+  \ifnum\jis"2121="8140 % sjis
+    \let\pxhy@to@ucs\bxjaSjisToUcs
+  \else\ifnum\jis"2121="A1A1 % euc
+    \let\pxhy@to@ucs\bxjaEucToUcs
+  \fi\fi
+\fi                                     %</pTeX>
 
 %% disable the verification of bxjscls
 \let\jsCheckHyperrefUnicode\@empty
