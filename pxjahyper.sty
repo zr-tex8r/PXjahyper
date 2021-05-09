@@ -82,6 +82,14 @@
 }
 \DeclareOption{noout2uni}{%
   \pxhy@uniescapefalse
+  \let\pxhy@nouniescape@given=t
+}
+\DeclareOption{convbkmk}{%
+  \pxhy@uniescapetrue
+}
+\DeclareOption{noconvbkmk}{%
+  \pxhy@uniescapefalse
+  \let\pxhy@nouniescape@given=t
 }
 %% others
 \DeclareOption{papersize}{%
@@ -132,7 +140,7 @@
 }
 %% dispatch
 \ExecuteOptions{%
-  auto,tounicode,noout2uni,papersize,jacommentline,disablecmds,otfutf,otfcid%
+  auto,tounicode,papersize,jacommentline,disablecmds,otfutf,otfcid%
 }
 \ProcessOptions*
 
@@ -222,6 +230,10 @@
 \else
   \pxhy@textcmdtrue
 \fi
+%% pxhy@uniescape switch
+\ifnum\pxhy@driver=\pxhy@driver@dvips \ifx t\pxhy@nouniescape@given\else
+  \pxhy@uniescapetrue
+\fi\fi
 
 % hyperref 'unicode' is allowed only on upLaTeX.
 \ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else1\fi\fi>\z@
