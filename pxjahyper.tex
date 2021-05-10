@@ -6,12 +6,13 @@
 \MakeShortVerb{\|}
 \usepackage{bxtexlogo}
 \bxtexlogoimport{*}
-\newcommand{\PkgVersion}{0.8}
-\newcommand{\PkgDate}{2021/05/05}
+\newcommand{\PkgVersion}{0.9}
+\newcommand{\PkgDate}{2021/05/10}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
 \newcommand{\Means}{：\quad}
+\providecommand{\Strong}[1]{\textsf{#1}}
 %-----------------------------------------------------------
 \begin{document}
 \title{\Pkg{pxjahyper} パッケージ}
@@ -30,7 +31,7 @@
   内部漢字コードに応じて適切なものを出力する。
 \item PDF文字列の中でLICR（|\"a| や |\textsection| 等の
   文字出力の命令）が正しく機能するようにする。
-  ただし、エンジンが {\pTeX} の場合は、out2uni を利用
+  ただし、エンジンが {\pTeX} の場合は、out2uni/convbkmk を利用
   する場合を除き、JIS~X~0208にない文字は出力できない
   （hyperrefの警告が出る）。
 \item {\TeX} の版面拡大機能が使われている
@@ -52,26 +53,38 @@
 
 使用可能なオプションは以下の通り。
 \begin{itemize}
+\item \Strong{ドライバオプション}\Means
+  |dvipdfmx|、|dvips|、および |nodvidriver|%
+  （ドライバ依存動作の無効化を明示的に指示、
+  現状ではほとんどの動作が無効になる）
+  が指定できる。
+  \Note 0.5版より、|nodvidriver| の別名の |none| は非推奨の扱いとする。
+\item |auto|（既定）\Means
+  ドライバオプションを\Pkg{hyperref}のドライバ指定から自動的に判定する。
 \item |tounicode|（既定）\Means
-  dvipdfmx用の「tounicode special」を出力する。
+  dvipdfmx用の「tounicode special」を発行し、
+  それを前提にした出力を行う。
 \item |notounicode|\Means
-  |tounicode| の否定。
+  dvipdfmx用の「tounicode special」を発行しない。
 \item |out2uni|\Means
-  out2uniフィルタ（角藤氏製作）を使うことを前提にした
-  出力を行う。
-  （|tounicode| が無効になる。）
-  {\upLaTeX} では使用不可。
-\item |noout2uni|（既定）\Means
-  |out2uni| の否定。
-\item |otfcid|（既定）\Means
-  \Pkg{japanese-otf}パッケージの |\CID| をPDF文字列中で
+  out2uniフィルタを使うことを前提にした出力を行う。
+\item |convbkmk|\Means
+  convbkmkフィルタを使うことを前提にした出力を行う。
+  \Note ドライバがdvipsの場合は既定で有効になる。
+\item |otfutf|（既定）\Means
+  \Pkg{japanese-otf}パッケージの |\UTF| 命令をPDF文字列中で
   使えるようにする。
-  具体的には、当該のAJ1のグリフに“対応”するUnicode文字が
-  あればそれを出力し、なければ（警告を出した上で）削除する。
+  \Note 詳細は\ref{ssec:otf-package}節を参照。
+\item |nootfutf|\Means
+  |otfutf| の否定。
+\item |otfcid|（既定）\Means
+  \Pkg{japanese-otf}パッケージの |\CID| 命令をPDF文字列中で
+  “可能な限り”使えるようにする。
+  \Note 詳細は\ref{ssec:otf-package}節を参照。
+  \Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
+  \Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージのインストールが必要。
 \item |nootfcid|\Means
   |otfcid| の否定。
-  \Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
-  \Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージインストールが必要。
 \item |disablecmds|（既定）\Means
   「PDF文字列中のテキスト装飾命令の無効化」を有効にする。
   \Note 詳細は\ref{ssec:disablecmds}節を参照。
@@ -81,14 +94,8 @@
   \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
   文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
   “可能な限り”使えるようにする。
-  \Note Unicode文字で表現可能であればそれを出力し、
-  なければ代替表現を出力する。
-  \Note |otfmacros| を指定する場合は |otfcid| も有効にする必要がある。
-  \Note \Pkg{ajmacros}パッケージの多くの命令は“脆弱（fragile）”である。
-  そのため、節見出し（|\section| 等の引数）で |\ajMaru| 等の命令を
-  使いたい場合は、命令の前に |\protect| 付ける必要がある。
-  \footnote{ちなみに、引数がPDF文字列として解釈される場合には、
-    |\protect| は全く結果に影響しない。}
+  \Note 詳細は\ref{ssec:otf-package}節を参照。
+  \Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
 \item |nootfmacros|\Means
   |otfmacros| の否定。
   \Note 0.6版より既定を |otfmacros| に変更した。
@@ -99,15 +106,13 @@
 \item |nobigcode|\Means
   |bigcode| の否定。
   \Note 0.3a版より既定を |bigcode| に変更した。
-\item |dvipdfmx|\Means
-  dvipdfmxを前提とした動作を行う。
-\item |nodvidriver|\Means
-  dvipdfmxを前提とした動作を抑止する。
-  \Note 現状では、この場合には本パッケージは実質的に何の動作も行わない。
-  \Note 0.5版より、|nodvidriver| の別名の |none| は非推奨の扱いとする。
-\item |auto|（既定）\Means
-  \Pkg{hyperref}のドライバがdvipdfmx用ならば |dvipdfmx|、
-  それ以外は |nodvidriver| の動作。
+\item |papersize|（既定）\Means
+  {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
+  UTF8-UTF16を用いる。
+  （当該のファイルが存在する必要がある。）
+\item |nopapersize|\Means
+  |bigcode| の否定。
+  \Note 0.3a版より既定を |bigcode| に変更した。
 \end{itemize}
 
 %===========================================================
@@ -118,6 +123,7 @@
 
 %-------------------
 \subsection{Unicode符号値による入力}
+\label{ssec:ux-command}
 
 PDF文字列入力中で、|\Ux| が以下の意味になる。
 PDF文字列以外では |\Ux| は以前の定義（または未定義）に戻る。
@@ -132,20 +138,93 @@ Unicode符号値入力用の命令が使っているものである。
 こちらを使う方が無難かもしれない。}
 
 \begin{itemize}
-\item |\Ux{|Unicode符号値|}|\Means
+\item |\Ux{|Unicode符号値16進|}|\Means
   その符号値の文字を出力する。
+  具体的な動作は以下の通り：
+  \begin{itemize}
+  \item エンジンが{\upLaTeX}のときは、当該の文字自体を書いたのと
+  同等になる。
+  \item エンジンが{\pLaTeX}で |out2uni| または |convbkmk| が有効の
+  場合は、エスケープ表記（|\0xUUUU|）を出力する。
+  \end{itemize}
+  \item それ以外の場合は、|\Ux| は定義されない。
 \end{itemize}
 
-符号値は16進数で指定する。
+%-------------------
+\subsection{\Pkg{japanese-otf}パッケージの文字入力命令への対応}
+\label{ssec:otf-package}
 
-なお、\Pkg{japanese-otf}パッケージの |\UTF| 命令は、PDF文字列中では
-out2uni用の出力を行うように設計されているが、
-本パッケージを {\upLaTeX} で用いた場合は、
-|\UTF| も（PDF文字列中では）|\Ux| と同じ動作
-（つまりtounicode用の出力）になるように変更される。
+\paragraph{\textbackslash UTF命令}
+|\UTF| 命令は、PDF文字列中では
+out2uni用の出力を行うように設計されている。
+本パッケージで |otfutf| オプションを有効にした場合は、
+PDF文字列中の動作が以下のように変更される。
+
+\begin{itemize}
+\item |\Ux| 命令（\ref{ssec:ux-command}節参照）が有効の場合は、
+  |\Ux| と同じ動作になる。
+\item それ以外の場合
+  （エンジンが{\pLaTeX}でtounicodeを前提にする場合）は、
+  警告を出した上でゲタ記号を出力する。
+  \Note {\pLaTeX}ではtounicodeの機能でUnicode文字を出力できないため。
+\end{itemize}
+
+\Note |\UTF| 命令の多言語版、
+すなわち |\UTFC|・|\UTFK|・|\UTFM|・|\UTFT| 命令も |\UTF|
+と同じ扱いになる。
+
+\paragraph{\textbackslash CID命令}
+\Pkg{japanese-otf}パッケージの仕様では |\CID| 命令は、PDF文字列中では
+サポートされない（未定義動作となる）。
+本パッケージで |otfcid| オプションを有効にした場合は、
+PDF文字列中で |\CID| が“可能な限り”使えるようにする。
+具体的な仕様は以下の通り。
+
+\begin{itemize}
+\item 当該のAJ1のグリフに“対応”する\textbf{単独の}Unicode文字が
+  あればそれを出力し、なければ
+  （警告を出した上で）削除する。
+  \footnote{他の同様の場合と合わせてゲタ記号を出力するようにしたい。
+    1.0版において仕様を変更する予定。}
+\item ただし |\Ux| 命令（\ref{ssec:ux-command}節参照）が
+  無効になる場合は、そもそもUnicode文字も出力できないため、
+  常に（警告を出した上で）ゲタ記号を出力する。
+  結局情報は欠落するが、それでも未定義動作（エラーになりえる）
+  よりは好ましいであろう。
+\end{itemize}
+
+\Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
+\Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージのインストールが必要。
+\Note |\CID| 命令の多言語版はサポートされない。
+
+\paragraph{ajmacrosパッケージの命令}
+本パッケージで |otfmacros| オプションを有効にした場合は、
+\Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
+文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
+“可能な限り”使えるようにする。
+具体的な仕様は以下の通り。
+
+\begin{itemize}
+\item 現状では、|\Ux| 命令が有効になる場合のみが
+  サポートされる。
+  \Note それ以外の場合は |otfmacros| オプションは無効になる。
+\item Unicode文字で表現可能であればそれを出力し、
+  なければ代替表現を出力する。
+\item Unicode文字を出力する場合の仕様は |\CID| と同じ。
+  代替表現の場合は文字自体が出力されることもある。
+\end{itemize}
+
+\Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
+（従って |otfcid| と同じ前提条件が課される。）
+|nootfcid| を指定した場合は |otfmacros| も無効になる。
+\Note \Pkg{ajmacros}パッケージの多くの命令は“脆弱（fragile）”である。
+そのため、節見出し（|\section| 等の引数）で |\ajMaru| 等の命令を
+使いたい場合は、命令の前に |\protect| 付ける必要がある。
+\footnote{ちなみに、引数がPDF文字列として解釈される場合には、
+  |\protect| は全く結果に影響しない。}
 
 %-------------------
-\subsection{PDF文字列用の文字命令の定義}
+\subsection{PDF文字列用の文字命令のユーザ定義}
 
 以下の命令が提供される。（プリアンブルでのみ使用可能。）
 
@@ -213,8 +292,5 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \item 次の\Pkg{japanese-otf}の命令\Means
   |\textmg| |\mgfamily| |\ltseries| |\ebseries| |\propshape|
 \end{itemize}
-
-
-
 
 \end{document}

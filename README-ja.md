@@ -70,6 +70,13 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 0.9  〈2021/05/10〉
+      - パッケージオプションの整理：`(no)papersize`、`convbkmk`、
+        `(no)otfutf` を追加。
+      - out2uni のエスケープ出力で UTF-16 を正しく扱う。
+      - pLaTeX で tounicode 前提の動作をするときに、`\Ux` 等の Unicode
+        符号入力についてフォールバック（ゲタ文字出力）を行う。
+
   * Version 0.8  〈2021/05/05〉
       - japanese-otf パッケージに対する実行のタイミングをパッケージ読込
         の直後に変更した。
