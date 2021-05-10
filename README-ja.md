@@ -70,6 +70,9 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 0.9a 〈2021/05/11〉
+      - バグ修正。
+
   * Version 0.9  〈2021/05/10〉
       - パッケージオプションの整理：`(no)papersize`、`convbkmk`、
         `(no)otfutf` を追加。

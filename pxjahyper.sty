@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2021/05/10 v0.9]
+\ProvidesPackage{pxjahyper}[2021/05/11 v0.9a]
 \def\pxhy@pkgname{pxjahyper}
 \providecommand{\bxDebug}[1]{}
 
@@ -1326,12 +1326,12 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
+%% check the current meaning
+\def\pxhy@tmpa#1{\@backslashchar 000#1}
+\ifx\HyPsd@Char\pxhy@tmpa
 \PackageInfo\pxhy@pkgname
  {The setup for hyperref 'unicode' is applied.\@gobbletwo}
 
-\def\pxhy@tmpa#1{\@backslashchar 000#1}
-\ifx\HyPsd@Char\pxhy@tmpa
-\typeout{!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!}
 %% The following code is taken from hyperref.sty.
 %%%%BEGIN
   \def\HyPsd@Char#1{%
