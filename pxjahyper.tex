@@ -6,8 +6,8 @@
 \MakeShortVerb{\|}
 \usepackage{bxtexlogo}
 \bxtexlogoimport{*}
-\newcommand{\PkgVersion}{0.9a}
-\newcommand{\PkgDate}{2021/05/11}
+\newcommand{\PkgVersion}{0.9b}
+\newcommand{\PkgDate}{2021/05/29}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -107,12 +107,9 @@
   |bigcode| の否定。
   \Note 0.3a版より既定を |bigcode| に変更した。
 \item |papersize|（既定）\Means
-  {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
-  UTF8-UTF16を用いる。
-  （当該のファイルが存在する必要がある。）
+  papersize specialの補正を有効にする。
 \item |nopapersize|\Means
-  |bigcode| の否定。
-  \Note 0.3a版より既定を |bigcode| に変更した。
+  |papersize| の否定。
 \end{itemize}
 
 %===========================================================

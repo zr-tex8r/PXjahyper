@@ -70,6 +70,10 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 0.9b 〈2021/05/29〉
+      - PDF 文字列中で pxbabel の `\UTFJ` をサポート。
+      - モジュール pxjahyper-uni.def を追加。
+
   * Version 0.9a 〈2021/05/11〉
       - バグ修正。
 
