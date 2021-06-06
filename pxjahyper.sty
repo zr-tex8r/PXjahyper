@@ -384,6 +384,59 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \def\pxhy@if@opt@b#1#2]{#1{#2}}
 
 \fi
+%--------------------------------------- Load bxjatoucs
+
+%% \pxhy@bxjatoucs@failure
+% Holds the reason message if bxjatoucs is unavailable;
+% otherwise equals to \relax.
+\@onlypreamble\pxhy@bxjatoucs@failure
+\let\pxhy@bxjatoucs@failure\relax
+
+%% \pxhy@try@load@bxjatoucs
+% Tries to load bxjatoucs. If it failed, then it sets the reason
+% message to \pxhy@bxjatoucs@failure.
+\@onlypreamble\pxhy@try@load@bxjatoucs
+\def\pxhy@try@load@bxjatoucs{%
+  \global\let\pxhy@try@load@bxjatoucs\relax
+  \ifpxhy@etoolbox
+    % load bxjatoucs in "check mode"
+    \IfFileExists{bxjatoucs.sty}{%
+      \let\bxjatoucsCheckAvail=t
+      \RequirePackage{bxjatoucs}[]
+      \undef\bxjatoucsCheckAvail
+    }{}
+    % and judge availability
+    \ifundef\bxjaCidToUcs{%
+      \def\pxhy@bxjatoucs@failure{%
+        package 'bxjatoucs' is unavailable%
+      }%
+    }{}
+  \else\ifpxhy@etex
+    \def\pxhy@bxjatoucs@failure{%
+      package 'etoolbox' is unavailable%
+    }
+  \else
+    \def\pxhy@bxjatoucs@failure{%
+      e-TeX extension is unavailable%
+    }
+  \fi\fi
+}
+
+\@tempswafalse
+\ifpxhy@uptex\else\ifpxhy@hy@unicode
+  \pxhy@try@load@bxjatoucs
+  \ifx\pxhy@bxjatoucs@failure\relax\else
+    \@tempswatrue
+  \fi
+\fi\fi
+\if@tempswa
+  \PackageError\pxhy@pkgname
+   {The hyperref 'unicode' mode is not supported\MessageBreak
+    because \pxhy@bxjatoucs@failure}%
+   {\pxhy@eh@fatal}%
+  \expandafter\endinput
+\fi
+
 %--------------------------------------- Output 'tounicode' special
 \ifpxhy@tounicode
 
@@ -711,35 +764,11 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %--------------------------------------- Support for 'otfcid'
 \ifpxhy@otfcid
 
-%% \pxhy@otfcid@disabled
-% Holds the message if otfcid/otfmacros is unavailable;
-% otherwise equals to \relax.
-\@onlypreamble\pxhy@otfcid@disabled
-\let\pxhy@otfcid@disabled\relax
-\ifpxhy@etoolbox
-  % check if bxjatoucs is available
-  \IfFileExists{bxjatoucs.sty}{%
-    \let\bxjatoucsCheckAvail=t
-    \RequirePackage{bxjatoucs}[]
-    \undef\bxjatoucsCheckAvail
-  }{}
-  \ifundef\bxjaCidToUcs{%
-    \def\pxhy@otfcid@disabled{%
-      package 'bxjatoucs' is unavailable%
-    }%
-  }{}
-\else\ifpxhy@etex
-  \def\pxhy@otfcid@disabled{%
-    package 'etoolbox' is unavailable%
-  }
-\else
-  \def\pxhy@otfcid@disabled{%
-    e-TeX extension is unavailable%
-  }
-\fi\fi
+%% packages
+\pxhy@try@load@bxjatoucs
 
 %% annihilate the ajmacros's own pdfstring process
-\ifpxhy@otfmacros\ifx\pxhy@otfcid@disabled\relax
+\ifpxhy@otfmacros\ifx\pxhy@bxjatoucs@failure\relax
   \let\ajRedefine@ajCommands\relax
 \fi\fi
 
@@ -773,14 +802,14 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \@onlypreamble\pxhy@dispatch@otfcid
 \def\pxhy@dispatch@otfcid{%
   \global\let\pxhy@dispatch@otfcid\relax
-  \ifx\pxhy@otfcid@disabled\relax % available!
+  \ifx\pxhy@bxjatoucs@failure\relax % available!
     \pdfstringdefDisableCommands{%
       \let\CID\pxhy@CID
     }%
   \else
     \PackageWarningNoLine\pxhy@pkgname
      {Option 'otfcid'/'otfmacros' is disabled, because\MessageBreak
-      \pxhy@otfcid@disabled}%
+      \pxhy@bxjatoucs@failure}%
     \pxhy@otfcidfalse
   \fi
 }
@@ -789,7 +818,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \@onlypreamble\pxhy@dispatch@otfmacros
 \def\pxhy@dispatch@otfmacros{%
   \global\let\pxhy@dispatch@otfmacros\relax
-  \ifx\pxhy@otfcid@disabled\relax % available!
+  \ifx\pxhy@bxjatoucs@failure\relax % available!
       \let\ajRedefine@ajCommands\relax
       \chardef\pxhy@tmp@orgcc=\catcode`\@
       \makeatletter
@@ -1331,73 +1360,16 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
-%% check the current meaning
-\def\pxhy@tmpa#1{\@backslashchar 000#1}
-\ifx\HyPsd@Char\pxhy@tmpa
-\PackageInfo\pxhy@pkgname
- {The setup for hyperref 'unicode' is applied.\@gobbletwo}
-
-%% The following code is taken from hyperref.sty.
-%%%%BEGIN
-  \def\HyPsd@Char#1{%
-    \ifnum`#1<128 %
-      \@backslashchar 000#1%
-    \else
-      \ifnum`#1<65536 %
-        \expandafter\HyPsd@CharTwoByte\number`#1!%
-      \else
-        \expandafter\expandafter\expandafter\HyPsd@CharSurrogate
-        \intcalcSub{`#1}{65536}!%
-      \fi
-    \fi
-  }%
-  \def\HyPsd@CharTwoByte#1!{%
-    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
-    \IntCalcDiv#1!256!!%
-    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
-    \IntCalcMod#1!256!!%
-  }%
-  \def\HyPsd@CharOctByte#1!{%
-    \@backslashchar
-    \IntCalcDiv#1!64!%
-    \intcalcDiv{\IntCalcMod#1!64!}{8}%
-    \IntCalcMod#1!8!%
-  }%
-  \def\HyPsd@CharSurrogate#1!{%
-    \@backslashchar 33%
-    \IntCalcDiv#1!262144!%
-    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
-    \intcalcDiv{\IntCalcMod#1!262144!}{1024}!%
-    \@backslashchar 33%
-    \expandafter\expandafter\expandafter\IntCalcAdd
-    \intcalcDiv{\IntCalcMod#1!1024!}{256}!4!%
-    \expandafter\expandafter\expandafter\HyPsd@CharOctByte
-    \IntCalcMod#1!256!!%
-  }%
-%%%%END
+%% load the submodule
+\input{pxjahyper-uni.def}
+\ifx t\pxHyperrefUnicodePatched
+  \PackageInfo\pxhy@pkgname
+   {The setup for hyperref 'unicode' is applied.\@gobbletwo}
+\else
+  \PackageInfo\pxhy@pkgname
+   {The setup for hyperref 'unicode' is NOT applied!\MessageBreak
+    The package might not work properly.\@gobbletwo}
 \fi
-
-\ifpxhy@uptex\else                      %<*pTeX>
-  \RequirePackage{bxjatoucs}[]
-  \def\HyPsd@Char#1{%
-    \ifnum`#1<128 %
-      \@backslashchar 000#1%
-    \else\ifnum`#1<256 %
-      \expandafter\HyPsd@CharTwoByte\number`#1!%
-    \else
-      \expandafter\HyPsd@CharTwoByte\number\pxhy@to@ucs{`#1}!%
-    \fi\fi
-  }%
-  \def\pxhy@to@ucs#1{"FFFD}
-  \ifnum\jis"2121="8140 % sjis
-    \let\pxhy@to@ucs\bxjaSjisToUcs
-  \else\ifnum\jis"2121="A1A1 % euc
-    \let\pxhy@to@ucs\bxjaEucToUcs
-  \fi\fi
-\fi                                     %</pTeX>
-
-%% disable the verification of bxjscls
-\let\jsCheckHyperrefUnicode\@empty
 
 \fi
 %--------------------------------------- 'jacommentline'
