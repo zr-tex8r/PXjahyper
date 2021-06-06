@@ -1018,7 +1018,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \pxDeclarePdfTextCommand{\textcent}{2171}{00A2}
 \pxDeclarePdfTextCommand{\textsterling}{2172}{00A3}
 \pxDeclarePdfTextCommand{\textcurrency}{}{00A4}
-\pxDeclarePdfTextCommand{\textyen}{}{00A5}
+\pxDeclarePdfTextCommand{\textyen}{216F}{00A5}
 \pxDeclarePdfTextCommand{\textbrokenbar}{}{00A6}
 \pxDeclarePdfTextCommand{\textsection}{2178}{00A7}
 \pxDeclarePdfTextCommand{\textasciidieresis}{212F}{00A8}
@@ -1118,27 +1118,19 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %%
 
 %%[B] Aliases to [A].
-%\pxDeclarePdfTextCommand{\copyright}{}{00A9}
 \pxDeclarePdfTextCommand{\textflqq}{}{00AB}
-\pxDeclarePdfTextCommand{\flqq}{}{00AB}
 \pxDeclarePdfTextCommand{\textneg}{224C}{00AC}
 \pxDeclarePdfTextCommand{\textpm}{215E}{00B1}
 \pxDeclarePdfTextCommand{\textcdot}{}{00B7}
 \pxDeclarePdfTextCommand{\textfrqq}{}{00BB}
-\pxDeclarePdfTextCommand{\frqq}{}{00BB}
 \pxDeclarePdfTextCommand{\texttimes}{215F}{00D7}
 \pxDeclarePdfTextCommand{\textdiv}{2160}{00F7}
 \pxDeclarePdfTextCommand{\textgrq}{2146}{2018}
 \pxDeclarePdfTextCommand{\textglq}{}{201A}
-\pxDeclarePdfTextCommand{\textquotesinglbase}{}{201A}
 \pxDeclarePdfTextCommand{\textgrqq}{2148}{201C}
-\pxDeclarePdfTextCommand{\crqq}{2148}{201C}
 \pxDeclarePdfTextCommand{\textglqq}{}{201E}
-\pxDeclarePdfTextCommand{\clqq}{}{201E}
-\pxDeclarePdfTextCommand{\textquotedblbase}{}{201E}
 \pxDeclarePdfTextCommand{\textflq}{}{2039}
 \pxDeclarePdfTextCommand{\textfrq}{}{203A}
-\pxDeclarePdfTextCommand{\textEuro}{}{20AC}
 \pxDeclarePdfTextCommand{\guillemetleft}{}{00AB}
 \pxDeclarePdfTextCommand{\guillemetright}{}{00BB}
 %%
@@ -1356,6 +1348,39 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 
 \fi                             %</unicode>
 %%%%%%%%%%%%%%%%%%%% done
+
+\ifpxhy@textcmd                 %<*textcmd>
+
+  %% \pxhy@disable@tc@commands
+  \def\pxhy@disable@tc@commands{%
+    \let\yen\textyen
+    \let\copyright\textcopyright
+    \let\flqq\textflqq
+    \let\frqq\textfrqq
+    \let\textquotesinglbase\quotesinglbase
+    \let\crqq\textglqq
+    \let\clqq\textgrqq
+    \let\textquotedblbase\quotedblbase
+    \let\textEuro\texteuro
+  }
+  %% register to 'disable' list
+  \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@tc@commands}
+
+  \ifpxhy@hy@unicode            %<*unicode>
+
+    %% supplementary definitions
+    \def\pxhy@next#1#2{%
+      \expandafter\ifx\csname PU\string#1\endcsname\relax
+        \DeclareTextCommand{#1}{PU}{#2}\fi}
+    \pxhy@next{\guillemetleft}{\80\253}%00AB
+    \pxhy@next{\guillemetright}{\80\273}%00BB
+    \pxhy@next{\textborn}{\9046\005}%2605
+    \pxhy@next{\textfinalsigma}{\83\302}%03C2
+    \pxhy@next{\textxgeq}{\9042\145}%2265
+    \pxhy@next{\textxleq}{\9042\144}%2264
+
+  \fi                           %</unicode>
+\fi                             %</textcmd>
 
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
