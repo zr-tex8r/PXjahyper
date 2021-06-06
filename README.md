@@ -52,6 +52,8 @@ the PDF strings in the output DVI file.
 Revision History
 ----------------
 
+  * Version 0.9c 〈2021/06/06〉
+  * Version 0.9b 〈2021/05/29〉
   * Version 0.9a 〈2021/05/11〉
   * Version 0.9  〈2021/05/10〉
   * Version 0.8  〈2021/05/05〉

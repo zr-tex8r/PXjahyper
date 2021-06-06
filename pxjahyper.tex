@@ -1,13 +1,23 @@
 % 文字コードは UTF-8
 % uplatex で組版する
-\documentclass[uplatex,a4paper]{jsarticle}
+\documentclass[uplatex,dvipdfmx,a4paper]{jsarticle}
 \renewcommand{\headfont}{\gtfamily\romanseries{sbc}\sffamily}
-\usepackage{shortvrb}
-\MakeShortVerb{\|}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,textcomp}
+\usepackage{color}
+\definecolor{myblue}{rgb}{0,0,0.75}
+\definecolor{mygreen}{rgb}{0,0.45,0}
+\usepackage[colorlinks,hyperfootnotes=false]{hyperref}
+\usepackage{pxjahyper}
+\hypersetup{linkcolor=myblue,urlcolor=mygreen,
+  pdftitle={pxjahyperパッケージ},
+  pdfauthor={八登崇之}}
 \usepackage{bxtexlogo}
 \bxtexlogoimport{*}
-\newcommand{\PkgVersion}{0.9b}
-\newcommand{\PkgDate}{2021/05/29}
+\usepackage{shortvrb}
+\MakeShortVerb{\|}
+\newcommand{\PkgVersion}{0.9c}
+\newcommand{\PkgDate}{2021/06/06}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -19,6 +29,7 @@
 \author{八登崇之\ （Takayuki YATO; aka.~``ZR''）}
 \date{v\PkgVersion\quad[\PkgDate]}
 \maketitle
+\tableofcontents
 
 %===========================================================
 \section{概要}
@@ -131,7 +142,7 @@ Unicode符号値入力用の命令が使っているものである。
 |\Ux| でUnicode符号値入力が可能になる。
 ただし、Unicode符号値入力用の命令としては
 「\Pkg{japanese-otf}パッケージの |\UTF| 命令」
-の方が有名であり、\Pkg{pxjahyper}は |\UTF| も正しく扱えるので、
+の方が有名であり、\Pkg{pxjahyper}は |\UTF| もサポートするので、
 こちらを使う方が無難かもしれない。}
 
 \begin{itemize}

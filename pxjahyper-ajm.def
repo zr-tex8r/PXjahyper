@@ -11,7 +11,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesFile{pxjahyper-ajm.def}[2021/05/29 v0.9b]
+\ProvidesFile{pxjahyper-ajm.def}[2021/06/06 v0.9c]
 
 %% avoid multiple loading
 \csname pxjahyperajmLoaded\endcsname
