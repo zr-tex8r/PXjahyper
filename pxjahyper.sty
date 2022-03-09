@@ -337,7 +337,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \def\pxhy@hook@after@package#1#2{%
   \ifpxhy@new@hook@system
     \@ifpackageloaded{#1}{#2}{%
-      \AddToHook{package/after/#1}{#2}%
+      \AddToHook{package/#1/after}{#2}%
     }%
   \else
     \AtBeginDocument{%
