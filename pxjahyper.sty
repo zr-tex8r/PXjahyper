@@ -31,7 +31,7 @@
 \newif\ifpxhy@uptex
 \newif\ifpxhy@etex
 \newif\ifpxhy@etoolbox
-\newif\ifpxhy@new@hook@system
+\chardef\pxhy@hook@system=0
 \newif\ifpxhy@tounicode
 \newif\ifpxhy@uniescape
 \newif\ifpxhy@bigcode
@@ -208,7 +208,11 @@
 \fi
 
 %% Check for the new hook system.
-\@ifl@t@r\fmtversion{2020/10/01}{\pxhy@new@hook@systemtrue}{}
+\@ifl@t@r\fmtversion{2021/11/15}{%
+  \chardef\pxhy@hook@system=2
+}{\@ifl@t@r\fmtversion{2020/02/02}{%
+  \chardef\pxhy@hook@system=1
+}{}}
 
 %% adjustment
 % upTeX not in unicode is not seen as upTeX.
@@ -280,7 +284,7 @@ pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
 pxhy@uptex = \ifpxhy@uptex true\else false\fi^^J%
 pxhy@etex = \ifpxhy@etex true\else false\fi^^J%
 pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
-pxhy@new@hook@system = \ifpxhy@new@hook@system true\else false\fi^^J%
+pxhy@hook@system = \the\pxhy@hook@system^^J%
 ifpxhy@hy@unicode = \ifpxhy@hy@unicode true\else false\fi^^J%
 pxhy@bigcode = \ifpxhy@bigcode true\else false\fi^^J%
 pxhy@driver = \the\pxhy@driver^^J%
@@ -298,7 +302,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \let\pxhy@mk\indent % unexpandable
 
 %% \pxhy@begin@dvi@hook{<text>}
-\ifpxhy@new@hook@system
+\ifnum\pxhy@hook@system>0
   \def\pxhy@begin@dvi@hook#1{%
     \AddToHook{shipout/firstpage}{#1}%
   }
@@ -335,13 +339,17 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 %% \pxhy@hook@after@package{<package-name>}{<code>}
 \@onlypreamble\pxhy@hook@after@package
 \def\pxhy@hook@after@package#1#2{%
-  \ifpxhy@new@hook@system
+  \ifcase\pxhy@hook@system
+    \AtBeginDocument{%
+      \@ifpackageloaded{#1}{#2}{}%
+    }%
+  \or
     \@ifpackageloaded{#1}{#2}{%
       \AddToHook{package/after/#1}{#2}%
     }%
-  \else
-    \AtBeginDocument{%
-      \@ifpackageloaded{#1}{#2}{}%
+  \or
+    \@ifpackageloaded{#1}{#2}{%
+      \AddToHook{package/#1/after}{#2}%
     }%
   \fi
 }
