@@ -16,8 +16,8 @@
 \bxtexlogoimport{*}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{0.9c}
-\newcommand{\PkgDate}{2021/06/06}
+\newcommand{\PkgVersion}{0.9d}
+\newcommand{\PkgDate}{2022/03/15}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -69,19 +69,28 @@
   （ドライバ依存動作の無効化を明示的に指示、
   現状ではほとんどの動作が無効になる）
   が指定できる。
-  \Note 0.5版より、|nodvidriver| の別名の |none| は非推奨の扱いとする。
+  \Note 0.5版より、|nodvidriver| の別名の |none| は
+    \Strong{非推奨}の扱いとする。
 \item |auto|（既定）\Means
   ドライバオプションを\Pkg{hyperref}のドライバ指定から自動的に判定する。
 \item |tounicode|（既定）\Means
-  dvipdfmx用の「tounicode special」を発行し、
-  それを前提にした出力を行う。
+  以下の2つの設定を行う。
+  \begin{enumerate}
+  \item ドライバがdvipdfmxである場合は「tounicode special」を発行する。
+    \Note この設定は |notounicode| オプションにより打ち消される。
+  \item 「tounicode special」を前提にした出力を行う。
+    \Note この設定は |out2uni|・|convbkmk| オプションと排他である。
+  \end{enumerate}
 \item |notounicode|\Means
   dvipdfmx用の「tounicode special」を発行しない。
 \item |out2uni|\Means
   out2uniフィルタを使うことを前提にした出力を行う。
 \item |convbkmk|\Means
   convbkmkフィルタを使うことを前提にした出力を行う。
-  \Note ドライバがdvipsの場合は既定で有効になる。
+  \Note ドライバがdvipsの場合は既定で |convbkmk| が有効になる。
+  これにより元の既定値 |tounicode| は
+  （1は効果がなく2は上書きされるため）
+  実質的に無効化される。
 \item |otfutf|（既定）\Means
   \Pkg{japanese-otf}パッケージの |\UTF| 命令をPDF文字列中で
   使えるようにする。
@@ -91,9 +100,9 @@
 \item |otfcid|（既定）\Means
   \Pkg{japanese-otf}パッケージの |\CID| 命令をPDF文字列中で
   “可能な限り”使えるようにする。
-  \Note 詳細は\ref{ssec:otf-package}節を参照。
-  \Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
+  \Note エンジンの{\eTeX}拡張および
   \Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージのインストールが必要。
+  \Note 詳細は\ref{ssec:otf-package}節を参照。
 \item |nootfcid|\Means
   |otfcid| の否定。
 \item |disablecmds|（既定）\Means
@@ -111,12 +120,12 @@
   |otfmacros| の否定。
   \Note 0.6版より既定を |otfmacros| に変更した。
 \item |bigcode|（既定）\Means
-  {\upTeX}でのToUnicode CMapとして既定のUTF8-UCSの代わりに\ 
-  UTF8-UTF16を用いる。
-  （当該のファイルが存在する必要がある。）
+  {\upTeX}でのToUnicode CMapとしてUTF8-UTF16を用いる。
+  %（当該のファイルが存在する必要がある。）
 \item |nobigcode|\Means
   |bigcode| の否定。
-  \Note 0.3a版より既定を |bigcode| に変更した。
+  {\upTeX}でのToUnicode CMapとしてUTF8-UCS2を用いる。
+  %\Note 0.3a版より既定を |bigcode| に変更した。
 \item |papersize|（既定）\Means
   papersize specialの補正を有効にする。
 \item |nopapersize|\Means
@@ -202,7 +211,7 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 \end{itemize}
 
 \Note |otfcid| の利用には、エンジンの{\eTeX}拡張および
-\Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージのインストールが必要。
+\Pkg{etoolbox}と\Pkg{bxjatoucs}パッケージが必要。
 \Note |\CID| 命令の多言語版はサポートされない。
 
 \paragraph{ajmacrosパッケージの命令}
@@ -219,7 +228,7 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 \item Unicode文字で表現可能であればそれを出力し、
   なければ代替表現を出力する。
 \item Unicode文字を出力する場合の仕様は |\CID| と同じ。
-  代替表現の場合は文字自体が出力されることもある。
+  代替表現の場合は文字自体が出力されうる。
 \end{itemize}
 
 \Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
@@ -243,7 +252,7 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
   指定した符号値の文字を出力することを指定する。
 \item |\pxDeclarePdfTextComposite{\制御綴}{|\Meta{引数}|}{|\Meta
 {JIS符号値}|}{|\Meta{Unicode符号値}|}|\Means
-  PDF文字列中の |\制御綴|（アクセント命令）+ \Meta{引数}の
+  PDF文字列中の「|\制御綴|（アクセント命令）+ \Meta{引数}」の
   動作として、指定した符号値の文字を出力することを指定する。
 \end{itemize}
 

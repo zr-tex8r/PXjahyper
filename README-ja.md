@@ -70,6 +70,9 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 0.9d 〈2022/03/15〉
+      - LaTeX カーネル 2021/11/15 版への対応。(thanks: @wtsnjp さん)
+
   * Version 0.9c 〈2021/06/06〉
       - pxjahyper-uni モジュールを実際に使用する。
 
