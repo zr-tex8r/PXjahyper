@@ -16,8 +16,8 @@
 \bxtexlogoimport{*}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{0.9d}
-\newcommand{\PkgDate}{2022/03/15}
+\newcommand{\PkgVersion}{1.0}
+\newcommand{\PkgDate}{2022/04/01}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -42,7 +42,8 @@
   内部漢字コードに応じて適切なものを出力する。
 \item PDF文字列の中でLICR（|\"a| や |\textsection| 等の
   文字出力の命令）が正しく機能するようにする。
-  ただし、エンジンが {\pTeX} の場合は、out2uni/convbkmk を利用
+  ただし、エンジンが {\pTeX} の場合は、out2uni/convbkmk%
+  （および試験的機能の“force-unicode”）を利用
   する場合を除き、JIS~X~0208にない文字は出力できない
   （hyperrefの警告が出る）。
 \item {\TeX} の版面拡大機能が使われている
@@ -69,10 +70,13 @@
   （ドライバ依存動作の無効化を明示的に指示、
   現状ではほとんどの動作が無効になる）
   が指定できる。
-  \Note 0.5版より、|nodvidriver| の別名の |none| は
-    \Strong{非推奨}の扱いとする。
-\item |auto|（既定）\Means
+  \Note 1.0版において |nodvidriver| の別名の |none| は
+    \Strong{廃止}された。
+    （0.5版から非推奨だった。）
+\item |autodvidriver|（既定）\Means
   ドライバオプションを\Pkg{hyperref}のドライバ指定から自動的に判定する。
+  \Note 1.0版において名前を |auto| から |autodvidriver| に変更した。
+    旧名の |auto| は\Strong{非推奨}とする。
 \item |tounicode|（既定）\Means
   以下の2つの設定を行う。
   \begin{enumerate}
@@ -130,6 +134,10 @@
   papersize specialの補正を有効にする。
 \item |nopapersize|\Means
   |papersize| の否定。
+\item |force-unicode|\Means
+  \Pkg{hyperref}の |unicode| オプションが有効でかつエンジンが{\pTeX}で
+  ある状況（0.9版よりサポートが追加されたが\Strong{試験的}である）
+  において出る警告を抑止する。
 \end{itemize}
 
 %===========================================================
@@ -297,17 +305,24 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 以下の命令が対象になる。
 
 \begin{itemize}
-\item 和文のフォント選択命令\Means
-  |\textmc| |\gtfamily| |\kanjifamily| |\useroman| |\userelfont|
-  など
-\item 次の{\pLaTeX}カーネル命令\Means
+\item \Pkg{hyperref}での無効化の対象である「フォント選択命令」の
+  和文版に相当するもの。
+  例えば、
+  |\textmc| |\gtfamily| |\kanjifamily| |\romanshape|
+  |\usekanji| |\useroman| |\userelfont|
+  等が該当する。
+\item {\pLaTeX}カーネル命令\Means
   |\<|
-\item 次の{\pTeX}プリミティブ\Means
-  |\inhibitglue| |\|(|no|)|autospacing| |\|(|no|)|autoxspacing|
-\item 次の\Pkg{plext}の命令\Means
+\item {\pTeX}プリミティブ\Means
+  |\|(|dis|)|inhibitglue| |\|(|no|)|autospacing| |\|(|no|)|autoxspacing|
+\item \Pkg{plext}の命令\Means
   |\bou| |\kasen| |\rensuji|
-\item 次の\Pkg{japanese-otf}の命令\Means
+\item \Pkg{japanese-otf}の命令\Means
   |\textmg| |\mgfamily| |\ltseries| |\ebseries| |\propshape|
+\item \Pkg{jsclasses}のクラスの命令\Means
+  |\maybeblue| |\HUGE|
+\item \Pkg{jlreq}クラスの命令\Means
+  |\jafontsize| |\tatechuyoko| |\jidori| % |\jaspace| |\akigumi|
 \end{itemize}
 
 \end{document}

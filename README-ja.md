@@ -12,7 +12,10 @@ LaTeX： pLaTeX 上での hyperref のサポート
 ### 前提環境
 
   * フォーマット： LaTeX
-  * エンジン： pTeX、upTeX、pTeX-ng  
+  * エンジン：
+      - pTeX 3.0版以降
+      - upTeX 0.10版以降
+      - pTeX-ng (試験的)
     ※一部の機能では e-TeX 拡張が必要。
   * DVIウェア： dvipdfmx
   * 依存パッケージ：
@@ -69,6 +72,12 @@ pxjahyper-enc パッケージ ー 文字コード設定
 
 更新履歴
 --------
+
+  * Version 1.0  〈2022/04/01〉
+      - オプション `auto` を `autodvidriver` に改名（旧名は非推奨）。
+      - オプション `nodvidriver` の非推奨の旧名 `none`を廃止した。
+      - `disablecmds` の対象に jsclasses 独自の命令を追加した。
+      - (試験的)“pTeX + hyperref unicode モード”に対するサポート。
 
   * Version 0.9d 〈2022/03/15〉
       - LaTeX カーネル 2021/11/15 版への対応。(thanks: @wtsnjp さん)
