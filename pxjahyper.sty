@@ -258,11 +258,9 @@
 % hyperref 'unicode' is allowed only on upLaTeX.
 \ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else
     \ifx t\pxhy@force@unicode\else1\fi\fi\fi>\z@
-  \PackageError\pxhy@pkgname
-   {The hyperref 'unicode' mode is not supported\MessageBreak
-    on the pTeX engine}%
-   {\pxhy@eh@fatal}%
-  \expandafter\endinput
+  \PackageWarningNoLine\pxhy@pkgname
+   {The support for the hyperref 'unicode' mode\MessageBreak
+    on the pTeX engine is currently experimental}%
 \fi
 \ifpxhy@hy@unicode
   \pxhy@uniescapefalse
