@@ -66,6 +66,9 @@
 \DeclareOption{nodvidriver}{%
   \let\pxhy@driver\pxhy@driver@none
 }
+\DeclareOption{autodvidriver}{%
+  \let\pxhy@driver\@undefined
+}
 %% modes
 \DeclareOption{auto}{%
   \let\pxhy@driver\@undefined %FIXME
