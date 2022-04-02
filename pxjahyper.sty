@@ -48,6 +48,8 @@
 \newif\ifpxhy@otfutf
 \newif\ifpxhy@otfcid
 \newif\ifpxhy@otfmacros
+\let\pxhy@jsclasses@name\relax
+\newif\ifpxhy@jlreq@cls
 
 %--------------------------------------- Package options
 
@@ -207,6 +209,17 @@
   \expandafter\endinput
 \fi
 
+%% Check the document class.
+% jlreq
+\ifpxhy@etex
+  \ifx\jlreqsetup\@undefined\else \pxhy@jlreq@clstrue \fi
+\fi
+% jsclasses
+\@ifclassloaded{jsarticle}{\def\pxhy@jsclasses@name{jsarticle}}{}
+\@ifclassloaded{jsbook}{\def\pxhy@jsclasses@name{jsbook}}{}
+\ifx\bxjs@clsname\@undefined\else \let\pxhy@jsclasses@name\relax \fi
+\ifx\jsc@clsname\@undefined\else \let\pxhy@jsclasses@name\jsc@clsname \fi
+
 %% Check for the new hook system.
 \@ifl@t@r\fmtversion{2021/11/15}{%
   \chardef\pxhy@hook@system=2
@@ -323,6 +336,12 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
     \kansujichar\@ne=#1\relax
     \xdef\pxhy@jchar{\kansuji\@ne}%
   \endgroup
+}
+
+%% \pxhy@let@jchar@jc\CS{<jis-code>}
+\def\pxhy@let@jchar@jc#1#2{%
+  \pxhy@get@jchar{\jis"#2}%
+  \let#1\pxhy@jchar
 }
 
 %% \pxhy@forcecjktoken
@@ -730,6 +749,17 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
     % bxbase
     \let\bxUx\pxhy@Ux
     \let\bxUI\pxhy@Ux
+  }
+\fi
+
+%% \pxhy@let@jchar@uc\CS{<num>}
+\ifx\pxhy@Ux\@undefined
+  \def\pxhy@let@jchar@uc#1#2{%
+    \let#1\noindent % issue a warning
+  }
+\else
+  \def\pxhy@let@jchar@uc#1#2{%
+    \def#1{\pxhy@Ux{#2}}%
   }
 \fi
 
@@ -1468,6 +1498,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
   \let\inhibitglue\@empty
   \let\noautospacing\@empty
   \let\noautoxspacing\@empty
+  \let\disinhibitglue\@empty
   % pLaTeX core
   \let\romanencoding\@gobble
   \let\kanjiencoding\@gobble
@@ -1503,6 +1534,58 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 % This registration should be of lower priority than others,
 % and thus is prepended to pdfstringdefPreHook.
 \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@commands}
+
+%% additions for jsclasses
+\ifx\pxhy@jsclasses@name\relax\else
+  \g@addto@macro\pxhy@disable@commands{%
+    \let\HUGE\@empty
+    \pxhy@ifdef@let\maybeblue\@empty
+  }
+\fi
+
+%% additions for jlreq
+\ifpxhy@jlreq@cls
+  % characters
+  \pxhy@let@jchar@jc\pxhy@C@ZWSP{2121}
+  \pxhy@let@jchar@jc\pxhy@C@ZWQM{2129}
+  \pxhy@let@jchar@jc\pxhy@C@ZWEM{212A}
+  %% \pxhy@P@tatechuyoko*{<text>}
+  \def\pxhy@P@tatechuyoko{\pxhy@if@star\@firstofone\@firstofone}
+  %% \pxhy@P@jaspace{<name>}
+  \def\pxhy@P@jaspace#1{\@nameuse{jaspace(arg=#1)}}
+  \@namedef{jaspace(arg=zenkaku)}{\pxhy@C@ZWSP}
+  \@namedef{jaspace(arg=nibu)}{ }
+  \@namedef{jaspace(arg=shibu)}{}
+  % addition
+  \def\pxhy@next#1{%
+    \let\expandafter\noexpand\csname#1\endcsname\noexpand#1}
+  \edef\pxhy@disable@commands{%
+    \unexpanded\expandafter{\pxhy@disable@commands}%
+    \pxhy@next\pxhy@C@ZWSP
+    \pxhy@next\pxhy@C@ZWQM
+    \pxhy@next\pxhy@C@ZWEM
+    \unexpanded{%
+      \let\jafontsize\@gobbletwo
+      \let\jaspace\pxhy@P@jaspace
+      \let\tatechuyoko\pxhy@P@tatechuyoko
+      \let\jidori\@secondoftwo
+      \let\akigumi\@secondoftwo}%
+  }
+\fi
+
+%% additions for ascmac (experimental)
+\@onlypreamble\pxhy@dispatch@dc@ascmac
+\def\pxhy@dispatch@dc@ascmac{%
+  \pxhy@let@jchar@jc\pxhy@P@yen{216F}
+  \pxhy@let@jchar@uc\pxhy@P@return{23CE}
+  \g@addto@macro\pxhy@disable@commands{%
+    \let\keytop\@firstofone
+    \let\yen\pxhy@P@yen
+    \let\return\pxhy@P@return
+    \let\Return\pxhy@P@return
+  }%
+}
+\pxhy@hook@after@package{ascmac}{\pxhy@dispatch@dc@ascmac}
 
 \fi
 %--------------------------------------- All done
