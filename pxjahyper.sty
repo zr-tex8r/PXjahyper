@@ -201,8 +201,19 @@
   \pxhy@etextrue
   \IfFileExists{etoolbox.sty}{\pxhy@etoolboxtrue}{}%
 }
-\pxhy@check\kanjiskip{\pxhy@ptextrue}
-\pxhy@check\forcecjktoken{\pxhy@uptextrue}
+\pxhy@check\kanjiskip{%
+  \pxhy@ptextrue
+  \pxhy@check\ucs{%
+    \pxhy@check\ptexversion{\pxhy@uptextrue}
+    \pxhy@check\kchardef{\pxhy@uptextrue}
+    \ifpxhy@uptex\else % upTeX v<0.10
+      \pxhy@error{This upTeX engine is too old}
+       {\pxhy@eh@fatal}
+      \endinput
+    \fi % only upTeX in Unicode is seen as upTeX
+    \ifnum\ucs"3000="3000 \else \pxhy@uptexfalse \fi
+  }
+}
 \ifpxhy@ptex\else
   \pxhy@error{Unknown engine used}%
    {\pxhy@eh@fatal}
@@ -228,10 +239,6 @@
 }{}}
 
 %% adjustment
-% upTeX not in unicode is not seen as upTeX.
-\ifnum\jis"2121="3000 \else
-  \pxhy@uptexfalse
-\fi
 % bigcode cannot be used without upTeX.
 \ifpxhy@bigcode \ifpxhy@uptex\else
   \pxhy@bigcodefalse
