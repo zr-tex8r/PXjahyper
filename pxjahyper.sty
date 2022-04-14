@@ -330,7 +330,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 % of the char code <num>.
 \def\pxhy@get@jchar#1{%
   \begingroup
-    \pxhy@forcecjktoken
+    \pxhy@forcecjktoken{#1}%
     \kansujichar\@ne=#1\relax
     \xdef\pxhy@jchar{\kansuji\@ne}%
   \endgroup
@@ -342,11 +342,14 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
   \let#1\pxhy@jchar
 }
 
-%% \pxhy@forcecjktoken
+%% \pxhy@forcecjktoken{<code>}
 \ifpxhy@uptex
-  \let\pxhy@forcecjktoken\forcecjktoken
+  \ifx\forcecjktoken\@undefined
+    \def\pxhy@forcecjktoken#1{\kcatcode#1=18 }
+  \else \def\pxhy@forcecjktoken#1{\forcecjktoken}
+  \fi
 \else
-  \let\pxhy@forcecjktoken\relax
+  \def\pxhy@forcecjktoken#1{\relax}
 \fi
 
 %% \pxhy@geta : GETA MARK
