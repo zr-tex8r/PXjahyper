@@ -16,8 +16,8 @@
 \bxtexlogoimport{*}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{1.0}
-\newcommand{\PkgDate}{2022/04/01}
+\newcommand{\PkgVersion}{1.0a}
+\newcommand{\PkgDate}{2022/04/15}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -35,8 +35,9 @@
 \section{概要}
 
 (u){\pLaTeX} + hyperref + dvipdfmxの組み合わせで
-日本語を含む「しおり」をもつPDF文書を作成する
-場合に必要となる機能を提供する。
+日本語を含む\Strong{PDF文字列}%
+（“しおり”などの文書情報の文字列）
+をもつPDF文書を作成する場合に必要となる機能を提供する。
 \begin{itemize}
 \item dvipdfmx用の「tounicode special」について、
   内部漢字コードに応じて適切なものを出力する。
@@ -208,9 +209,9 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 \begin{itemize}
 \item 当該のAJ1のグリフに“対応”する\textbf{単独の}Unicode文字が
   あればそれを出力し、なければ
-  （警告を出した上で）削除する。
-  \footnote{他の同様の場合と合わせてゲタ記号を出力するようにしたい。
-    1.0版において仕様を変更する予定。}
+  （警告を出した上で）ゲタ記号を出力する。
+  \footnote{旧版では削除していたが、他の同様の場合と合わせるため
+    1.0版よりゲタ記号を出力する仕様を変更した。}
 \item ただし |\Ux| 命令（\ref{ssec:ux-command}節参照）が
   無効になる場合は、そもそもUnicode文字も出力できないため、
   常に（警告を出した上で）ゲタ記号を出力する。
@@ -236,12 +237,17 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 \item Unicode文字で表現可能であればそれを出力し、
   なければ代替表現を出力する。
 \item Unicode文字を出力する場合の仕様は |\CID| と同じ。
-  代替表現の場合は文字自体が出力されうる。
+  代替表現の場合は「普通の文字の出力に置き換えられる」
+  可能性がある。
+  \Note 例えば、|\ajLig{ドル}|（“ドル”の組文字）はUnicode文字の
+  U+3326に“対応”するので |\Ux{3326}| と同等になるが、
+  |\ajLig{ウルシ}|（“ウルシ”の組文字）はUnicodeに“対応”する
+  文字がないため単に“|ウルシ|”と書いたのと同等になる。
 \end{itemize}
 
 \Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
 （従って |otfcid| と同じ前提条件が課される。）
-|nootfcid| を指定した場合は |otfmacros| も無効になる。
+|otfcid| が無効な場合は |otfmacros| も無効になる。
 \Note \Pkg{ajmacros}パッケージの多くの命令は“脆弱（fragile）”である。
 そのため、節見出し（|\section| 等の引数）で |\ajMaru| 等の命令を
 使いたい場合は、命令の前に |\protect| 付ける必要がある。
@@ -291,8 +297,8 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \Pkg{hyperref}では基本的なテキスト装飾命令
 （多くは{\LaTeX}カーネルが提供するもの）
 について、「PDF文字列として扱う場合は自動的に無力化
-\footnote{例えば、“|\textit{text}|”や“|{\large text}|”は
-  単に“|text|”と書いたものと見なされる。}
+%\footnote{例えば、“|\textit{text}|”や“|{\large text}|”は
+%  単に“|text|”と書いたものと見なされる。}
 する」機構を実装している。
 これにより、例えば節見出しのテキストに“|\textit{text}|”が
 含まれていたとすると、
@@ -323,6 +329,39 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
   |\maybeblue| |\HUGE|
 \item \Pkg{jlreq}クラスの命令\Means
   |\jafontsize| |\tatechuyoko| |\jidori| % |\jaspace| |\akigumi|
+\end{itemize}
+
+%===========================================================
+\section{hyperrefの“unicodeモード”での動作}
+\newcommand*{\cXAdj}{\mbox{}\vspace*{-2pt}}% WOW!
+
+\Pkg{hyperref}パッケージの |unicode| オプションが有効である場合
+（これを“unicodeモード”と呼ぶことにする
+\footnote{“unicodeモード”を有効にする方法は |unicode|(|=true|)
+  の指定以外にも存在する。
+  また、\Pkg{hyperref}の7.00g版[2021-02-04]より、
+  {\pLaTeX}以外のエンジン（\Strong{{\upLaTeX}も含む}）について
+  “unicodeモード”は既定で有効になっていることに注意。}%
+）で動作している場合は、PDF文字列のUnicodeへの変換は
+（DVIドライバ等でなく）\Pkg{hyperref}自身により行われる。
+\Pkg{hyperref}が“unicodeモード”である場合には、\Pkg{pxjahyper}は
+それを自動的に検知してそれに適応した動作に切り替える。
+\begin{itemize}
+\item \cXAdj|\Ux| 命令は\Pkg{hyperref}の |\unichar| 命令を利用して出力する。
+  このため、{\pLaTeX}でもUnicode文字の出力が可能になる。
+\item PDF文字列中の和文文字やLICR命令の処理は
+  \Pkg{hyperref}の側に任せられる。
+  \Note ただし現状では「tounicode special」の発行は
+  （特に害はないため）無効化されない。
+\end{itemize}
+ただし、現状での“unicodeモード”対応動作には以下の制限がある。
+\begin{itemize}
+\item \cXAdj\Pkg{hyperref}の（|pdftitle| 等の）パッケージオプション中での
+  和文文字の処理は失敗する。
+  このため、文書情報は |\hypersetup| 命令で指定する必要がある。
+\item \cXAdj{\pLaTeX}における“unicodeモード”対応動作は試験的機能の
+  扱いであるため、その旨の警告が表示される。
+  この警告は |force-unicode| オプションを指定すれば抑止できる。
 \end{itemize}
 
 \end{document}

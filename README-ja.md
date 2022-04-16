@@ -73,6 +73,9 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.0a 〈2022/04/15〉
+      - バグ修正。
+
   * Version 1.0  〈2022/04/01〉
       - オプション `auto` を `autodvidriver` に改名（旧名は非推奨）。
       - オプション `nodvidriver` の非推奨の旧名 `none`を廃止した。

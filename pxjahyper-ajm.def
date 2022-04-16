@@ -11,7 +11,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesFile{pxjahyper-ajm.def}[2022/04/01 v1.0]
+\ProvidesFile{pxjahyper-ajm.def}[2022/04/15 v1.0a]
 
 %% avoid multiple loading
 \csname pxjahyperajmLoaded\endcsname
@@ -119,7 +119,7 @@
 %--------------------------------------- helpers
 
 %% prepare
-\pxhy@forcecjktoken
+\pxhy@forcecjktoken{0}
 
 %% shorthands
 \catcode`\`=\active \let`\noexpand
