@@ -48,6 +48,8 @@
 \newif\ifpxhy@otfutf
 \newif\ifpxhy@otfcid
 \newif\ifpxhy@otfmacros
+\newif\ifpxhy@Uchar@avail
+\newif\ifpxhy@ucs@avail
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
 
@@ -236,6 +238,11 @@
    {\pxhy@eh@fatal}
   \expandafter\endinput
 \fi
+
+%% pxhy@Uchar@avail switch
+\pxhy@check\Uchar{\pxhy@Uchar@availtrue}
+%% pxhy@ucs@avail switch
+\pxhy@check\ucs{\pxhy@ucs@availtrue}
 
 %% Check the document class.
 % jlreq
@@ -692,6 +699,31 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
     \unichar{"#1}%
   }
 
+\else\ifpxhy@Uchar@avail           %<*Uchar>
+  \ifpxhy@uptex
+
+    %% \pxhy@Ux
+    \def\pxhy@Ux{\pxhy@uchex}
+    \pxhy@utfXVIfalse
+    \def\pxhy@uchex@out#1{\Uchar"#1 }
+
+  \else\ifpxhy@ucs@avail
+
+    %% \pxhy@Ux
+    \def\pxhy@Ux{\pxhy@uchex}
+    \pxhy@utfXVIfalse
+    \def\pxhy@uchex@out#1{%
+      \expandafter\pxhy@uchex@out@a\ucs"#1\pxhy@mk{#1}%
+    }
+    \def\pxhy@uchex@out@a#1\pxhy@mk#2{%
+      \ifnum#1<\z@
+        \@nameuse{U+#2}%
+        \pxhy@geta
+      \else \Uchar#1
+      \fi
+    }
+
+  \fi\fi
 \else\ifpxhy@uptex              %<*upTeX>
 
   %% \pxhy@Ux
@@ -737,7 +769,8 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
   }
   \expandafter\pxhy@next\pxhy@marker
   %END--
-\fi\fi                          %</>
+
+\fi\fi\fi                       %</>
 
 \AtEndOfPackage{%
 \ifx\pxhy@posthook\@undefined\else
