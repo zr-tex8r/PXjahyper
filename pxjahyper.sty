@@ -52,6 +52,7 @@
 \newif\ifpxhy@ucs@avail
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
+\newif\ifpxhy@fallback@geta
 
 %--------------------------------------- Package options
 
@@ -151,6 +152,12 @@
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
 }
+\DeclareOption{fallback-geta}{%
+  \pxhy@fallback@getatrue
+}
+\DeclareOption{fallback-delete}{%
+  \pxhy@fallback@getafalse
+}
 \DeclareOption{force-unicode}{%
   \let\pxhy@force@unicode=t
 }
@@ -160,7 +167,7 @@
 %% dispatch
 \ExecuteOptions{%
   resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
-  disablecmds,otfutf,otfcid%
+  disablecmds,otfutf,otfcid,fallback-geta%
 }
 \ProcessOptions*
 
@@ -326,6 +333,7 @@ pxhy@disablecmds = \ifpxhy@disablecmds true\else false\fi^^J%
 pxhy@otfutf = \ifpxhy@otfutf true\else false\fi^^J%
 pxhy@otfcid = \ifpxhy@otfcid true\else false\fi^^J%
 pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
+pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 }
 
 %--------------------------------------- Helpers
@@ -378,6 +386,13 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
 %% \pxhy@geta : GETA MARK
 \pxhy@get@jchar{\jis"222E}
 \let\pxhy@geta\pxhy@jchar
+
+%% \pxhy@print@geta
+\ifpxhy@fallback@geta
+  \def\pxhy@print@geta{\pxhy@geta}
+\else
+  \let\pxhy@print@geta\@empty
+\fi
 
 %% \pxhy@hook@after@package{<package-name>}{<code>}
 \@onlypreamble\pxhy@hook@after@package
@@ -718,7 +733,7 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
     \def\pxhy@uchex@out@a#1\pxhy@mk#2{%
       \ifnum#1<\z@
         \@nameuse{U+#2}%
-        \pxhy@geta
+        \pxhy@print@geta
       \else \Uchar#1
       \fi
     }
@@ -841,7 +856,7 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
   \pxhy@utfXVIfalse
   \def\pxhy@uchex@out#1{%
     \@nameuse{U+#1}% issue a warning
-    \pxhy@geta
+    \pxhy@print@geta
   }
 \else
   \let\pxhy@UTF\pxhy@Ux
@@ -890,7 +905,7 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
 \ifx\pxhy@Ux\@undefined
   \def\pxhy@cid@aux#1\pxhy@mk#2{%
     \@nameuse{CID+#2}% issue a warning
-    \pxhy@geta
+    \pxhy@print@geta
   }
 \else
 \def\pxhy@cid@aux#1\pxhy@mk#2{%
@@ -898,7 +913,7 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
     \pxhy@Ux{#1}%
   \else
     \@nameuse{CID+#2}%
-    \pxhy@geta
+    \pxhy@print@geta
   \fi
 }
 \fi
