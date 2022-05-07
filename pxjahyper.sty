@@ -37,7 +37,7 @@
 \newif\ifpxhy@bigcode
 \let\pxhy@bigcode@given\relax
 \newif\ifpxhy@papersize
-\newif\ifpxhy@textcmd
+\newif\ifpxhy@charcmds
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \chardef\pxhy@driver@dvips=2
@@ -103,6 +103,12 @@
 \DeclareOption{nopapersize}{%
   \pxhy@papersizefalse
 }
+\DeclareOption{charcmds}{%
+  \pxhy@charcmdstrue
+}
+\DeclareOption{nocharcmds}{%
+  \pxhy@charcmdsfalse
+}
 \pxhy@bigcodetrue
 \DeclareOption{bigcode}{%
   \pxhy@bigcodetrue
@@ -148,7 +154,8 @@
 }
 %% dispatch
 \ExecuteOptions{%
-  auto,tounicode,papersize,jacommentline,disablecmds,otfutf,otfcid%
+  resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
+  disablecmds,otfutf,otfcid%
 }
 \ProcessOptions*
 
@@ -254,16 +261,6 @@
      {bigcode is invalid without upTeX}
   \fi
 \fi\fi
-%% pxhy@papersize switch
-\ifnum\pxhy@driver=\pxhy@driver@none
-  \pxhy@papersizefalse
-\fi
-%% pxhy@textcmd switch
-\ifnum\pxhy@driver=\pxhy@driver@none
-  \pxhy@textcmdfalse
-\else
-  \pxhy@textcmdtrue
-\fi
 %% pxhy@uniescape switch
 \ifnum\pxhy@driver=\pxhy@driver@dvips \ifx t\pxhy@nouniescape@given\else
   \pxhy@uniescapetrue
@@ -304,19 +301,30 @@
   \pxhy@otfmacrosfalse
 \fi\fi
 
+%% in nodvidriver mode
+\ifnum\pxhy@driver=\pxhy@driver@none
+  \pxhy@papersizefalse
+  \pxhy@charcmdsfalse
+\fi
+
 \bxDebug{****pxjahyper env^^J%
 pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
 pxhy@uptex = \ifpxhy@uptex true\else false\fi^^J%
 pxhy@etex = \ifpxhy@etex true\else false\fi^^J%
 pxhy@etoolbox = \ifpxhy@etoolbox true\else false\fi^^J%
 pxhy@hook@system = \the\pxhy@hook@system^^J%
-ifpxhy@hy@unicode = \ifpxhy@hy@unicode true\else false\fi^^J%
-pxhy@bigcode = \ifpxhy@bigcode true\else false\fi^^J%
-pxhy@driver = \the\pxhy@driver^^J%
 pxhy@tounicode = \ifpxhy@tounicode true\else false\fi^^J%
 pxhy@uniescape = \ifpxhy@uniescape true\else false\fi^^J%
+pxhy@bigcode = \ifpxhy@bigcode true\else false\fi^^J%
 pxhy@papersize = \ifpxhy@papersize true\else false\fi^^J%
-pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
+pxhy@charcmds = \ifpxhy@charcmds true\else false\fi^^J%
+pxhy@driver = \the\pxhy@driver^^J%
+ifpxhy@hy@unicode = \ifpxhy@hy@unicode true\else false\fi^^J%
+pxhy@jacommentline = \ifpxhy@jacommentline true\else false\fi^^J%
+pxhy@disablecmds = \ifpxhy@disablecmds true\else false\fi^^J%
+pxhy@otfutf = \ifpxhy@otfutf true\else false\fi^^J%
+pxhy@otfcid = \ifpxhy@otfcid true\else false\fi^^J%
+pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
 }
 
 %--------------------------------------- Helpers
@@ -901,7 +909,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
   \ifpxhy@hy@unicode PU\else PD1\fi
 }
 
-\ifpxhy@textcmd                 %<*textcmd>
+\ifpxhy@charcmds                %<*charcmds>
 
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
@@ -1402,7 +1410,7 @@ pxhy@textcmd = \ifpxhy@textcmd true\else false\fi^^J%
 \fi                             %</unicode>
 %%%%%%%%%%%%%%%%%%%% done
 
-\ifpxhy@textcmd                 %<*textcmd>
+\ifpxhy@charcmds                %<*charcmds>
 
   %% \pxhy@disable@tc@commands
   \def\pxhy@disable@tc@commands{%
