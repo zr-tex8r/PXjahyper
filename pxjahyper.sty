@@ -275,7 +275,7 @@
 \fi
 \ifpxhy@hy@unicode
   \pxhy@uniescapefalse
-  \pxhy@otfutftrue
+  %\pxhy@otfutftrue
 \fi
 % otfcid requrires otfutf.
 \ifpxhy@otfutf \else \ifpxhy@otfcid
@@ -423,6 +423,12 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
 }
 \def\pxhy@if@opt@a#1@[@#2#3\pxhy@mk{#2}
 \def\pxhy@if@opt@b#1#2]{#1{#2}}
+
+%% \pxhy@xdetokenize{<text>}
+\let\pxhy@xdetokenize\detokenize
+\pxhy@check\expanded{%
+  \def\pxhy@xdetokenize#1{\detokenize\expandafter{\expanded{#1}}}%
+}
 
 \fi
 %--------------------------------------- Load bxjatoucs
@@ -827,7 +833,7 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
 %% \pxhy@CID{<cid>}
 \def\pxhy@CID#1{%
   \expandafter\expandafter\expandafter\pxhy@cid@aux
-      \bxjaCidToUcsHex{#1}\pxhy@mk{\detokenize{#1}}%
+      \bxjaCidToUcsHex{#1}\pxhy@mk{\pxhy@xdetokenize{#1}}%
 }
 %% \pxhy@fast@CID{<cid>}
 \def\pxhy@fast@CID#1{%
