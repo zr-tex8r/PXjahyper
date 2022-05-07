@@ -277,15 +277,6 @@
   \pxhy@uniescapefalse
   \pxhy@otfutftrue
 \fi
-% otfmacros requires upTeX or out2uni.
-\ifpxhy@uptex\else\ifpxhy@uniescape\else\ifpxhy@hy@unicode\else
-  \pxhy@otfmacrosfalse
-  \ifx t\pxhy@otfmacros@given
-    \PackageWarningNoLine\pxhy@pkgname
-     {Option 'otfmacros' is invalid\MessageBreak
-      unless upTeX is used or 'out2uni' is specified}
-  \fi
-\fi\fi\fi
 % otfcid requrires otfutf.
 \ifpxhy@otfutf \else \ifpxhy@otfcid
   \PackageInfo\pxhy@pkgname
