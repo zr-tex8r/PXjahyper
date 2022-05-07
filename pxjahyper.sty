@@ -75,10 +75,10 @@
 \DeclareOption{autodvidriver}{%
   \let\pxhy@driver\@undefined
 }
-%% modes
 \DeclareOption{auto}{% DEPRECATED
   \let\pxhy@driver\@undefined
 }
+%% operation modes
 \DeclareOption{tounicode}{%
   \pxhy@tounicodetrue
 }
@@ -465,7 +465,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \let\pxhy@bxjatoucs@failure\relax
 
 %% \pxhy@try@load@bxjatoucs
-% Tries to load bxjatoucs. If it failed, then it sets the reason
+% Tries to load bxjatoucs. If that fails, then it sets the reason
 % message to \pxhy@bxjatoucs@failure.
 \@onlypreamble\pxhy@try@load@bxjatoucs
 \def\pxhy@try@load@bxjatoucs{%
@@ -524,7 +524,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 % When the magnification is in effect (i.e. \mag<>1000), hyperref
 % emits a papersize special with wrong value. (dvipdfmx interprets
-% the lengths in the special as 'true' length.) So here a papersize
+% the lengths in the special as 'true' lengths.) So here a papersize
 % special with adjusted values will be output.
 \ifnum\mag=1000 \else
   \expandafter\ifx\csname ifHy@setpagesize\expandafter\endcsname
@@ -1520,7 +1520,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %--------------------------------------- 'jacommentline'
 \ifpxhy@jacommentline
 
-% The 'jacomemntline' feature outputs at the top of the
+% The 'jacommentline' feature outputs at the top of the
 % hyperref outline file (*.out) a comment line including
 % some Japanese characters.
 
