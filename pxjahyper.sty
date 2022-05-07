@@ -152,6 +152,9 @@
 \DeclareOption{force-unicode}{%
   \let\pxhy@force@unicode=t
 }
+\DeclareOption{disable-Ux}{% for debug
+  \let\pxhy@disable@Ux=t
+}
 %% dispatch
 \ExecuteOptions{%
   resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
@@ -734,7 +737,11 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
   }
   \expandafter\pxhy@next\pxhy@marker
   %END--
+\fi\fi                          %</>
 
+\AtEndOfPackage{%
+\ifx\pxhy@posthook\@undefined\else
+  \bxDebug{add to \string\pdfstringdefPostHook}%
   % Add \pxhy@posthook to \pdfstringdefPostHook.
   \begingroup
     \toks@\expandafter{\pdfstringdefPostHook{#1}}
@@ -746,11 +753,12 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
     }%
     \pxhy@next
   \endgroup
-
-\fi\fi                          %</>
+\fi
+}
 
 \ifpxhy@uniescape               %<*uniescape>
 
+  \let\pxhy@posthook\@undefined
   %% \pxhy@Ux
   \def\pxhy@Ux{\pxhy@uchex}%
   % \pxhy@uchex converts to UTF-16
@@ -761,6 +769,12 @@ pxhy@otfmacros = \ifpxhy@otfmacros true\else false\fi^^J%
   }
 
 \fi                             %</uniescape>
+
+%% 'disable-Ux' (for debug)
+\ifx t\pxhy@disable@Ux
+  \let\pxhy@Ux\@undefined
+  \let\pxhy@posthook\@undefined
+\fi
 
 %% Makes \Ux be the code input command in PDF strings.
 \ifx\pxhy@Ux\@undefined\else
