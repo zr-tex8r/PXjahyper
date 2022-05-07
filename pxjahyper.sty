@@ -191,6 +191,10 @@
   \ifx\Hy@driver\pxhy@tmpa
     \let\pxhy@driver\pxhy@driver@dvips
   \fi
+  \ifnum\pxhy@driver=\pxhy@driver@none \ifx\Hy@driver\@undefined\else
+    \PackageWarningNoLine\pxhy@pkgname
+     {Unknown hyperref driver: \Hy@driver}
+  \fi\fi
 \fi
 
 %% Check the engine.
