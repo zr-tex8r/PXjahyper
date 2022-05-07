@@ -66,12 +66,15 @@
 \DeclareOption{nodvidriver}{%
   \let\pxhy@driver\pxhy@driver@none
 }
+\DeclareOption{resetdvidriver}{%
+  \let\pxhy@driver\@undefined
+}
 \DeclareOption{autodvidriver}{%
   \let\pxhy@driver\@undefined
 }
 %% modes
-\DeclareOption{auto}{%
-  \let\pxhy@driver\@undefined %FIXME
+\DeclareOption{auto}{% DEPRECATED
+  \let\pxhy@driver\@undefined
 }
 \DeclareOption{tounicode}{%
   \pxhy@tounicodetrue
