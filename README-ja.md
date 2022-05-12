@@ -73,6 +73,14 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.1  〈2022/05/10〉
+      - オプション `fallback-geta`/`fallback-delete` を追加。
+      - `\Uchar` を利用したUnicode文字出力をサポート。
+      - オプション `(no)charcmds` を追加。
+      - hyperref のドライバ指定が非サポートの場合に警告する。
+      - `otfmacros` オプション指定の条件を撤廃する。
+      - `autodvidriver` を `resetdvidriver` に変える。
+
   * Version 1.0a 〈2022/04/15〉
       - バグ修正。
 

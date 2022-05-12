@@ -16,8 +16,8 @@
 \bxtexlogoimport{*}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{1.0a}
-\newcommand{\PkgDate}{2022/04/15}
+\newcommand{\PkgVersion}{1.1}
+\newcommand{\PkgDate}{2022/05/10}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -64,7 +64,7 @@
 \usepackage[オプション,...]{pxjahyper}
 \end{verbatim}\end{quote}
 
-使用可能なオプションは以下の通り。
+\paragraph{使用可能なオプション}\mbox{}
 \begin{itemize}
 \item \Strong{ドライバオプション}\Means
   |dvipdfmx|、|dvips|、および |nodvidriver|%
@@ -74,14 +74,14 @@
   \Note 1.0版において |nodvidriver| の別名の |none| は
     \Strong{廃止}された。
     （0.5版から非推奨だった。）
-\item |autodvidriver|（既定）\Means
+\item |resetdvidriver|（既定）\Means
   ドライバオプションを\Pkg{hyperref}のドライバ指定から自動的に判定する。
-  \Note 1.0版において名前を |auto| から |autodvidriver| に変更した。
+  \Note 1.1版において名前を |auto| から |resetdvidriver| に変更した。
     旧名の |auto| は\Strong{非推奨}とする。
 \item |tounicode|（既定）\Means
   以下の2つの設定を行う。
   \begin{enumerate}
-  \item ドライバがdvipdfmxである場合は「tounicode special」を発行する。
+  \item ドライバが |dvipdfmx| である場合は「tounicode special」を発行する。
     \Note この設定は |notounicode| オプションにより打ち消される。
   \item 「tounicode special」を前提にした出力を行う。
     \Note この設定は |out2uni|・|convbkmk| オプションと排他である。
@@ -92,10 +92,31 @@
   out2uniフィルタを使うことを前提にした出力を行う。
 \item |convbkmk|\Means
   convbkmkフィルタを使うことを前提にした出力を行う。
-  \Note ドライバがdvipsの場合は既定で |convbkmk| が有効になる。
+  \Note ドライバが |dvips| の場合は既定で |convbkmk| が有効になる。
   これにより元の既定値 |tounicode| は
   （1は効果がなく2は上書きされるため）
   実質的に無効化される。
+\item |fallback-geta|（既定）\Means
+  PDF文字列中で表現不可能な文字をゲタ記号（〓）に置き換える。
+\item |fallback-delete|\Means
+  PDF文字列中で表現不可能な文字を削除する。
+\item |otfmacros|（既定）\Means
+  \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
+  文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
+  “可能な限り”使えるようにする。
+  \Note 詳細は\ref{ssec:otf-package}節を参照。
+  \Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
+\item |nootfmacros|\Means
+  |otfmacros| の否定。
+  \Note 0.6版より既定を |otfmacros| に変更した。
+\item |papersize|（既定）\Means
+  papersize specialの補正を有効にする。
+\item |nopapersize|\Means
+  |papersize| の否定。
+\end{itemize}
+
+\paragraph{上級者向けオプション}\mbox{}
+\begin{itemize}
 \item |otfutf|（既定）\Means
   \Pkg{japanese-otf}パッケージの |\UTF| 命令をPDF文字列中で
   使えるようにする。
@@ -115,26 +136,13 @@
   \Note 詳細は\ref{ssec:disablecmds}節を参照。
 \item |nodisablecmds|\Means
   |disablecmds| の否定。
-\item |otfmacros|（既定）\Means
-  \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
-  文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
-  “可能な限り”使えるようにする。
-  \Note 詳細は\ref{ssec:otf-package}節を参照。
-  \Note |otfmacros| を有効にする場合は |otfcid| も有効にする必要がある。
-\item |nootfmacros|\Means
-  |otfmacros| の否定。
-  \Note 0.6版より既定を |otfmacros| に変更した。
 \item |bigcode|（既定）\Means
   {\upTeX}でのToUnicode CMapとしてUTF8-UTF16を用いる。
   %（当該のファイルが存在する必要がある。）
 \item |nobigcode|\Means
   |bigcode| の否定。
   {\upTeX}でのToUnicode CMapとしてUTF8-UCS2を用いる。
-  %\Note 0.3a版より既定を |bigcode| に変更した。
-\item |papersize|（既定）\Means
-  papersize specialの補正を有効にする。
-\item |nopapersize|\Means
-  |papersize| の否定。
+  \Note 0.3a版より既定を |bigcode| に変更した。
 \item |force-unicode|\Means
   \Pkg{hyperref}の |unicode| オプションが有効でかつエンジンが{\pTeX}で
   ある状況（0.9版よりサポートが追加されたが\Strong{試験的}である）
@@ -151,7 +159,7 @@
 \subsection{Unicode符号値による入力}
 \label{ssec:ux-command}
 
-PDF文字列入力中で、|\Ux| が以下の意味になる。
+PDF文字列入力中で、命令 |\Ux| が以下の意味に変更される。
 PDF文字列以外では |\Ux| は以前の定義（または未定義）に戻る。
 \footnote{|\Ux| という命令名は\Pkg{bxbase}パッケージの
 Unicode符号値入力用の命令が使っているものである。
@@ -168,12 +176,23 @@ Unicode符号値入力用の命令が使っているものである。
   その符号値の文字を出力する。
   具体的な動作は以下の通り：
   \begin{itemize}
-  \item エンジンが{\upLaTeX}のときは、当該の文字自体を書いたのと
-  同等になる。
-  \item エンジンが{\pLaTeX}で |out2uni| または |convbkmk| が有効の
+  \item |out2uni| または |convbkmk| が有効の
   場合は、エスケープ表記（|\0xUUUU|）を出力する。
+  \item エンジンが{\upLaTeX}の場合、あるいは“unicodeモード”
+  （\ref{sec:Unicode-mode}節）が有効の場合は、
+  当該のUnicode文字自体を書いたのと同等になる。
+  \item 上記以外で、{\TeX} Live 2022以降の{\pLaTeX}の場合
+  \footnote{正確にいうと、|\Uchar| と |\ucs| プリミティブをもつ
+    {\epTeX}エンジンである場合。}%
+  は、当該のUnicode文字に対応するJIS符号系の文字を書いたのと同等になる。
+  JIS符号系にない文字の場合は出力できないので警告を出しだ上で
+  ゲタ記号（〓）を出力%
+  \footnote{|fallback-delete| オプションが有効の場合は何も出力しない。
+    以降で「ゲタ記号を出力」とある場合についても同様。}%
+  する。
   \end{itemize}
-  \item それ以外の場合は、|\Ux| は定義されない。
+  \item どの条件にも当てはまらない場合は、|\Ux| は無効
+  （定義されない）になる。
 \end{itemize}
 
 %-------------------
@@ -181,18 +200,17 @@ Unicode符号値入力用の命令が使っているものである。
 \label{ssec:otf-package}
 
 \paragraph{\textbackslash UTF命令}
-|\UTF| 命令は、PDF文字列中では
-out2uni用の出力を行うように設計されている。
+\Pkg{japanese-otf}パッケージの |\UTF| 命令は、PDF文字列中では
+out2uni用の出力を行う。
 本パッケージで |otfutf| オプションを有効にした場合は、
 PDF文字列中の動作が以下のように変更される。
 
 \begin{itemize}
 \item |\Ux| 命令（\ref{ssec:ux-command}節参照）が有効の場合は、
   |\Ux| と同じ動作になる。
-\item それ以外の場合
-  （エンジンが{\pLaTeX}でtounicodeを前提にする場合）は、
-  警告を出した上でゲタ記号を出力する。
-  \Note {\pLaTeX}ではtounicodeの機能でUnicode文字を出力できないため。
+\item それ以外の場合は、
+  常に（警告を出した上で）ゲタ記号を出力する。
+  %\Note {\pLaTeX}ではtounicodeの機能でUnicode文字を出力できないため。
 \end{itemize}
 
 \Note |\UTF| 命令の多言語版、
@@ -212,6 +230,10 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
   （警告を出した上で）ゲタ記号を出力する。
   \footnote{旧版では削除していたが、他の同様の場合と合わせるため
     1.0版よりゲタ記号を出力する仕様を変更した。}
+  \Note 例えば、|\CID{8226}|（ローマ数字12）はUnicode文字の
+  U+217Bに“対応”するので |\Ux{217B}| と同等になるが、
+  |\CID{8297}|（ローマ数字15）については“対応”する
+  単独のUnicode文字がないので、ゲタ記号に置き換えられる。
 \item ただし |\Ux| 命令（\ref{ssec:ux-command}節参照）が
   無効になる場合は、そもそもUnicode文字も出力できないため、
   常に（警告を出した上で）ゲタ記号を出力する。
@@ -231,12 +253,13 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 具体的な仕様は以下の通り。
 
 \begin{itemize}
-\item 現状では、|\Ux| 命令が有効になる場合のみが
-  サポートされる。
-  \Note それ以外の場合は |otfmacros| オプションは無効になる。
+%\item 現状では、|\Ux| 命令が有効になる場合のみが
+%  サポートされる。
+%  \Note それ以外の場合は |otfmacros| オプションは無効になる。
 \item Unicode文字で表現可能であればそれを出力し、
   なければ代替表現を出力する。
 \item Unicode文字を出力する場合の仕様は |\CID| と同じ。
+  （|\Ux| が無効の場合はゲタ記号になる。）
   代替表現の場合は「普通の文字の出力に置き換えられる」
   可能性がある。
   \Note 例えば、|\ajLig{ドル}|（“ドル”の組文字）はUnicode文字の
@@ -333,7 +356,7 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 
 %===========================================================
 \section{hyperrefの“unicodeモード”での動作}
-\newcommand*{\cXAdj}{\mbox{}\vspace*{-2pt}}% WOW!
+\label{sec:Unicode-mode}
 
 \Pkg{hyperref}パッケージの |unicode| オプションが有効である場合
 （これを“unicodeモード”と呼ぶことにする
@@ -347,7 +370,7 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \Pkg{hyperref}が“unicodeモード”である場合には、\Pkg{pxjahyper}は
 それを自動的に検知してそれに適応した動作に切り替える。
 \begin{itemize}
-\item \cXAdj|\Ux| 命令は\Pkg{hyperref}の |\unichar| 命令を利用して出力する。
+\item |\Ux| 命令は\Pkg{hyperref}の |\unichar| 命令を利用して出力する。
   このため、{\pLaTeX}でもUnicode文字の出力が可能になる。
 \item PDF文字列中の和文文字やLICR命令の処理は
   \Pkg{hyperref}の側に任せられる。
@@ -356,10 +379,10 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \end{itemize}
 ただし、現状での“unicodeモード”対応動作には以下の制限がある。
 \begin{itemize}
-\item \cXAdj\Pkg{hyperref}の（|pdftitle| 等の）パッケージオプション中での
+\item \Pkg{hyperref}の（|pdftitle| 等の）パッケージオプション中での
   和文文字の処理は失敗する。
   このため、文書情報は |\hypersetup| 命令で指定する必要がある。
-\item \cXAdj{\pLaTeX}における“unicodeモード”対応動作は試験的機能の
+\item {\pLaTeX}における“unicodeモード”対応動作は試験的機能の
   扱いであるため、その旨の警告が表示される。
   この警告は |force-unicode| オプションを指定すれば抑止できる。
 \end{itemize}
