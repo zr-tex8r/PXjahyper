@@ -1079,13 +1079,14 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \endgroup
 \fi                             %</ext-jis-map>
 %--------------------------------------- Redefine text commands for PD1
+\ifpxhy@charcmds                %<*charcmds>
 
+%% \pxhy@cc@jis@only
+\chardef\pxhy@cc@jis@only=0
 %% \pxhy@pdfenc
 \edef\pxhy@pdfenc{%
   \ifpxhy@hy@unicode PU\else PD1\fi
 }
-
-\ifpxhy@charcmds                %<*charcmds>
 
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
@@ -1102,15 +1103,6 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
    {\DeclareTextCompositeCommand{#1}{\pxhy@pdfenc}{#2}}%
    {\pxhy@revoke@pdf@tcc{#1}{#2}}%
 }
-
-\else                           %<*!textcmd>
-
-\@onlypreamble\pxDeclarePdfTextCommand
-\newcommand*\pxDeclarePdfTextCommand[3]{}
-\@onlypreamble\pxDeclarePdfTextComposite
-\newcommand*\pxDeclarePdfTextComposite[4]{}
-
-\fi                             %</textcmd>
 
 %% \pxhy@revoke@pdf@tc
 \@onlypreamble\pxhy@revoke@pdf@tc
@@ -1139,7 +1131,8 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %% \pxhy@decl@pdf@tc
 \@onlypreamble\pxhy@decl@pdf@tc
 \def\pxhy@decl@pdf@tc#1#2{%
-  \pxhy@get@body{#1}{#2}%
+  \edef\pxhy@next{{#1}{\ifx\pxhy@mt#2\pxhy@mt FFFD\else#2\fi}}%
+  \expandafter\pxhy@get@body\pxhy@next
   \ifx\pxhy@body\@undefined
     \let\pxhy@next\@secondoftwo
   \else
@@ -1160,30 +1153,47 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     \pxhy@get@jchar{\ucs"#2}%
     \let\pxhy@body\pxhy@jchar
   }%
-\else                           %<*!upTeX>
-  \ifpxhy@uniescape
+\else\ifpxhy@hy@unicode         %<*unicode>
+  \def\pxhy@get@body#1#2{%
+    \def\pxhy@body{\unichar{"#2}}%
+  }%
+\else\ifpxhy@uniescape          %<*uniescape>
     \def\pxhy@get@body#1#2{%
-      \ifx\pxhy@end#1\pxhy@end
+      \ifx\pxhy@mt#1\pxhy@mt
         \def\pxhy@body{\0x#2}%
       \else
         \pxhy@get@jchar{\jis"#1}%
         \let\pxhy@body\pxhy@jchar
       \fi
     }%
-  \else
+\else                           %<*!>
+  \chardef\pxhy@cc@jis@only=1
     \def\pxhy@get@body#1#2{%
-      \ifx\pxhy@end#1\pxhy@end
+      \ifx\pxhy@mt#1\pxhy@mt
         \let\pxhy@body\@undefined
       \else
         \pxhy@get@jchar{\jis"#1}%
         \let\pxhy@body\pxhy@jchar
       \fi
     }%
-  \fi
-\fi                             %</upTeX>
+\fi\fi\fi                       %</>
 
 %%%%%%%%%%%%%%%%%%%% the definitions
-\ifpxhy@hy@unicode\else         %<!*unicode>
+\ifpxhy@hy@unicode              %<*unicode>
+
+% The PU encoding has already done the job.
+% I supplement some definitions.
+\def\pxhy@next#1#2{%
+  \expandafter\ifx\csname PU\string#1\endcsname\relax
+    \DeclareTextCommand{#1}{PU}{#2}\fi}
+\pxhy@next{\guillemetleft}{\80\253}%00AB
+\pxhy@next{\guillemetright}{\80\273}%00BB
+\pxhy@next{\textborn}{\9046\005}%2605
+\pxhy@next{\textfinalsigma}{\83\302}%03C2
+\pxhy@next{\textxgeq}{\9042\145}%2265
+\pxhy@next{\textxleq}{\9042\144}%2264
+
+\else                           %<!*unicode>
 
 % JIS X 0213 does not distinguish the following pairs:
 %  - circumflex(U+02C6) and asciicircum(U+005E)
@@ -1201,6 +1211,9 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \DeclareTextCommand{\ij}{PD1}{ij}% needed?
 \DeclareTextCommand{\textspace}{PD1}{\040}
 \DeclareTextCommand{\textquotesingle}{PD1}{\047}
+\DeclareTextCommand{\textasteriskcentered}{PD1}{*}
+\DeclareTextCommand{\textanoteleia}{PD1}{\textperiodcentered}
+\DeclareTextCommand{\texterotimatiko}{PD1}{;}
 
 %% Some adjustments on accents.
 \DeclareTextAccent{\H}{PD1}{\texthungarumlaut}
@@ -1209,6 +1222,9 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \DeclareTextAccent{\u}{PD1}{\textasciibreve}
 \DeclareTextCompositeCommand{\u}{PD1}{\@empty}{\textasciibreve}
 \DeclareTextCompositeCommand{\u}{PD1}{\ }{\textasciibreve}
+\DeclareTextAccent{\U}{PD1}{\textasciibreve}
+\DeclareTextCompositeCommand{\U}{PD1}{\@empty}{\textasciibreve}
+\DeclareTextCompositeCommand{\U}{PD1}{\ }{\textasciibreve}
 \DeclareTextAccent{\k}{PD1}{\textogonek}
 \DeclareTextCompositeCommand{\k}{PD1}{\@empty}{\textogonek}
 \DeclareTextCompositeCommand{\k}{PD1}{\ }{\textogonek}
@@ -1452,10 +1468,12 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \pxDeclarePdfTextCommand{\CYRD}{2725}{0414}
 \pxDeclarePdfTextCommand{\CYRE}{2726}{0415}
 \pxDeclarePdfTextCommand{\CYRYO}{2727}{0401}
+\pxDeclarePdfTextComposite{\"}{\CYRE}{2727}{0401}
 \pxDeclarePdfTextCommand{\CYRZH}{2728}{0416}
 \pxDeclarePdfTextCommand{\CYRZ}{2729}{0417}
 \pxDeclarePdfTextCommand{\CYRI}{272A}{0418}
 \pxDeclarePdfTextCommand{\CYRISHRT}{272B}{0419}
+\pxDeclarePdfTextComposite{\U}{\CYRI}{272B}{0419}
 \pxDeclarePdfTextCommand{\CYRK}{272C}{041A}
 \pxDeclarePdfTextCommand{\CYRL}{272D}{041B}
 \pxDeclarePdfTextCommand{\CYRM}{272E}{041C}
@@ -1485,10 +1503,12 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \pxDeclarePdfTextCommand{\cyrd}{2755}{0434}
 \pxDeclarePdfTextCommand{\cyre}{2756}{0435}
 \pxDeclarePdfTextCommand{\cyryo}{2757}{0451}
+\pxDeclarePdfTextComposite{\"}{\cyre}{2757}{0451}
 \pxDeclarePdfTextCommand{\cyrzh}{2758}{0436}
 \pxDeclarePdfTextCommand{\cyrz}{2759}{0437}
 \pxDeclarePdfTextCommand{\cyri}{275A}{0438}
 \pxDeclarePdfTextCommand{\cyrishrt}{275B}{0439}
+\pxDeclarePdfTextComposite{\U}{\cyri}{275B}{0439}
 \pxDeclarePdfTextCommand{\cyrk}{275C}{043A}
 \pxDeclarePdfTextCommand{\cyrl}{275D}{043B}
 \pxDeclarePdfTextCommand{\cyrm}{275E}{043C}
@@ -1575,18 +1595,19 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 % Give a substitute definition to characters that appear as
 % ligatures, since otherwise hyperref leaves some garbage in
 % output pdf-strings when such ligatures appear.
-\ifpxhy@uptex\else
-  \ifpxhy@uniescape\else
+\ifnum\pxhy@cc@jis@only>\z@
     \DeclareTextCommand{\textendash}{PD1}{--}
     \DeclareTextCommand{\textquestiondown}{PD1}{}% empty
     \DeclareTextCommand{\textexclamdown}{PD1}{}% empty
+\fi
+\ifnum\pxhy@cc@jis@only>\z@
+  \ifx\pxhy@hkcdot\@undefined\else
+    \DeclareTextCommand{\textperiodcentered}{PD1}{\pxhy@hkcdot}
   \fi
 \fi
 
 \fi                             %</unicode>
 %%%%%%%%%%%%%%%%%%%% done
-
-\ifpxhy@charcmds                %<*charcmds>
 
   %% \pxhy@disable@tc@commands
   \def\pxhy@disable@tc@commands{%
@@ -1603,22 +1624,14 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   %% register to 'disable' list
   \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@tc@commands}
 
-  \ifpxhy@hy@unicode            %<*unicode>
+\else                           %<*!textcmd>
 
-    %% supplementary definitions
-    \def\pxhy@next#1#2{%
-      \expandafter\ifx\csname PU\string#1\endcsname\relax
-        \DeclareTextCommand{#1}{PU}{#2}\fi}
-    \pxhy@next{\guillemetleft}{\80\253}%00AB
-    \pxhy@next{\guillemetright}{\80\273}%00BB
-    \pxhy@next{\textborn}{\9046\005}%2605
-    \pxhy@next{\textfinalsigma}{\83\302}%03C2
-    \pxhy@next{\textxgeq}{\9042\145}%2265
-    \pxhy@next{\textxleq}{\9042\144}%2264
+\@onlypreamble\pxDeclarePdfTextCommand
+\newcommand*\pxDeclarePdfTextCommand[3]{}
+\@onlypreamble\pxDeclarePdfTextComposite
+\newcommand*\pxDeclarePdfTextComposite[4]{}
 
-  \fi                           %</unicode>
 \fi                             %</textcmd>
-
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
