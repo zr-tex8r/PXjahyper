@@ -576,7 +576,33 @@
 
 %%<!> \aj半角{<string>}
 % Simply expands to the string.
-\pxhy@DeclareMacro{半角}#1{#1}{}
+\pxhy@DeclareMacro{半角}#1{%
+  `\ifpxhy@ajhankaku@chars
+    `\pxhy@ajHankaku{#1}%
+  `\else #1%
+  `\fi
+}
+\gdef\pxhy@ajHankaku#1{%
+  \pxhy@ajHankaku@a#1\pxhy@end
+}
+\gdef\pxhy@ajHankaku@a#1{%
+  \pxhy@cond\ifx#1\pxhy@end\fi{}{%else
+    \ifcsdef{pxhy@ucs@hw/#1}{\csuse{pxhy@ucs@hw/#1}}{#1}%
+    \pxhy@ajHankaku@a}%
+}
+\def\pxhy@next#1{%
+  \pxhy@cond\ifx#1\pxhy@end\fi{}{%else
+    \csxdef{pxhy@ucs@hw/#1}{\UTF{\expandafter\pxhy@FFhex\meaning\x;}}%
+    \chardef\y=\numexpr\x+1\relax \let\x\y
+    \pxhy@next}%
+}
+\def\pxhy@FFhex#1"#2;{FF#2}
+\chardef\x="61
+\pxhy@next
+  。「」、・ヲァィゥェォャュョッーアイウエオカキクケ%
+  コサシスセソタチツテトナニヌネノハヒフヘホマミムメ%
+  モヤユヨラリルレロワン゛゜\pxhy@end
+\csgdef{pxhy@ucs@hw/　}{\space}
 
 %%<OK> \○ / \● / \□ / \■ / \◇ / \◆
 % Expands to \ajLig{} or \@ajNumber.

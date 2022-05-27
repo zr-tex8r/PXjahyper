@@ -56,6 +56,7 @@
 \newif\ifpxhy@fallback@geta
 \newif\ifpxhy@extjis@map
 \newif\ifpxhy@extjis@use
+\newif\ifpxhy@ajhankaku@chars
 
 %%<*> \pxjahypersetup{<key>=<value>,...}
 \newcommand*\pxjahypersetup{%
@@ -197,6 +198,10 @@
 \pxhy@extjis@usetrue
 \define@key{\pxhy@pkgname}{extjis}[true]{%
   \pxhy@handle@key{extjis}{#1}{extjis@use#1}%
+}
+% 'ajhankaku-chars=<bool>'
+\define@key{\pxhy@pkgname}{ajhankaku-chars}[true]{%
+  \pxhy@handle@key{ajhankaku-chars}{#1}{ajhankaku@chars#1}%
 }
 %% dispatch
 \ExecuteOptions{%
