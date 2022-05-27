@@ -24,6 +24,7 @@
 }
 
 %% packages
+\RequirePackage{keyval}\relax
 \RequirePackage{ltxcmds}[2011/08/22]% v1.21
 
 %% variables
@@ -53,6 +54,21 @@
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
 \newif\ifpxhy@fallback@geta
+
+%%<*> \pxjahypersetup{<key>=<value>,...}
+\newcommand*\pxjahypersetup{%
+  \setkeys{\pxhy@pkgname}%
+}
+%% \pxhy@handle@key{<key>}{<value>}{<name>}
+\def\pxhy@handle@key#1#2#3{%
+  \expandafter\let\expandafter\pxhy@tmpa\csname pxhy@#3\endcsname
+  \ifx\pxhy@tmpa\relax
+    \PackageError\pxhy@pkgname
+     {Invalid value for key '#1':\MessageBreak\@spaces#2}%
+     {\@eha}%
+  \else \pxhy@tmpa
+  \fi
+}
 
 %--------------------------------------- Package options
 
@@ -153,10 +169,10 @@
   \pxhy@otfmacrosfalse
 }
 \DeclareOption{fallback-geta}{%
-  \pxhy@fallback@getatrue
+  \pxjahypersetup{fallback=geta}%
 }
 \DeclareOption{fallback-delete}{%
-  \pxhy@fallback@getafalse
+  \pxjahypersetup{fallback=delete}%
 }
 \DeclareOption{force-unicode}{%
   \let\pxhy@force@unicode=t
@@ -164,10 +180,21 @@
 \DeclareOption{disable-Ux}{% for debug
   \let\pxhy@disable@Ux=t
 }
+%% key-value options
+\DeclareOption*{%
+  \expandafter\pxjahypersetup\expandafter{\CurrentOption}%
+}
+% 'fallback=geta|delete'
+\pxhy@fallback@getatrue
+\define@key{\pxhy@pkgname}{fallback}{%
+  \pxhy@handle@key{fallback}{#1}{kv@fallback@@#1}%
+}
+\let\pxhy@kv@fallback@@geta\pxhy@fallback@getatrue
+\let\pxhy@kv@fallback@@delete\pxhy@fallback@getafalse
 %% dispatch
 \ExecuteOptions{%
   resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
-  disablecmds,otfutf,otfcid,fallback-geta%
+  disablecmds,otfutf,otfcid%
 }
 \ProcessOptions*
 
@@ -388,11 +415,9 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \let\pxhy@geta\pxhy@jchar
 
 %% \pxhy@print@geta
-\ifpxhy@fallback@geta
-  \def\pxhy@print@geta{\pxhy@geta}
-\else
-  \let\pxhy@print@geta\@empty
-\fi
+\def\pxhy@print@geta{%
+  \ifpxhy@fallback@geta \pxhy@geta \fi
+}
 
 %% \pxhy@hook@after@package{<package-name>}{<code>}
 \@onlypreamble\pxhy@hook@after@package
@@ -415,6 +440,11 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %% \pxhy@triexpandafter
 \def\pxhy@triexpandafter{%
   \expandafter\expandafter\expandafter
+}
+
+%% \pxhy@csletcs{<csname1>}{<csname2>}
+\def\pxhy@csletcs#1#2{%
+  \expandafter\let\csname#1\expandafter\endcsname\csname#2\endcsname
 }
 
 %% \pxhy@cond\ifXXX<arg>\fi{<true>}{<false>}
