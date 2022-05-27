@@ -54,6 +54,8 @@
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
 \newif\ifpxhy@fallback@geta
+\newif\ifpxhy@extjis@map
+\newif\ifpxhy@extjis@use
 
 %%<*> \pxjahypersetup{<key>=<value>,...}
 \newcommand*\pxjahypersetup{%
@@ -191,6 +193,11 @@
 }
 \let\pxhy@kv@fallback@@geta\pxhy@fallback@getatrue
 \let\pxhy@kv@fallback@@delete\pxhy@fallback@getafalse
+% 'extjis=<bool>'
+\pxhy@extjis@usetrue
+\define@key{\pxhy@pkgname}{extjis}[true]{%
+  \pxhy@handle@key{extjis}{#1}{extjis@use#1}%
+}
 %% dispatch
 \ExecuteOptions{%
   resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
@@ -277,6 +284,12 @@
 \pxhy@check\Uchar{\pxhy@Uchar@availtrue}
 %% pxhy@ucs@avail switch
 \pxhy@check\ucs{\pxhy@ucs@availtrue}
+
+%% pxhy@extjis@map switch
+% Note that 'tounicode' is necessary.
+\ifpxhy@etex \ifpxhy@uptex\else \ifpxhy@tounicode
+  \pxhy@extjis@maptrue
+\fi\fi\fi
 
 %% Check the document class.
 % jlreq
@@ -760,11 +773,25 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     \def\pxhy@uchex@out#1{%
       \expandafter\pxhy@uchex@out@a\ucs"#1\pxhy@mk{#1}%
     }
+    \chardef\pxhy@max@asc="7F
     \def\pxhy@uchex@out@a#1\pxhy@mk#2{%
       \ifnum#1<\z@
+        \ifnum"#2>\pxhy@max@asc
+          \ifpxhy@extjis@use
+            \expandafter\pxhy@uchex@out@b\csname
+                pxhy@uc/\number"#2\endcsname{#2}%
+          \else \pxhy@uchex@out@b\relax{#2}%
+          \fi
+        \else \Uchar"#2
+        \fi
+      \else \Uchar#1
+      \fi
+    }
+    \def\pxhy@uchex@out@b#1#2{%
+      \ifx#1\relax
         \@nameuse{U+#2}%
         \pxhy@print@geta
-      \else \Uchar#1
+      \else #1%
       \fi
     }
 
@@ -1030,6 +1057,88 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \fi
 
 \fi
+%--------------------------------------- Extended JIS mapping
+\ifpxhy@extjis@map             %<*extjis-map>
+\begingroup
+
+\def\pxhy@next#1#2#3#4{%
+  \@tempcnta"#1\relax\@tempcntb#3\relax
+  \chardef\pxhy@tmpa\numexpr#4+1\relax
+  \@whilenum{\@tempcntb<\pxhy@tmpa}\do{%
+    \expandafter\xdef\csname pxhy@uc/\the\@tempcnta\endcsname{%
+      \unexpanded{#2}\the\@tempcntb}%
+    \advance\@tempcnta\@ne \advance\@tempcntb\@ne}%
+}
+
+%% add special mapping
+\ifnum \jis"2121="8140 % sjis
+  \pxhy@next{2460}{\207\10}{0}{7}
+  \pxhy@next{2468}{\207\11}{0}{7}
+  \pxhy@next{2470}{\207\12}{0}{3}
+  \pxhy@next{2160}{\207\12}{4}{7}
+  \pxhy@next{2164}{\207\13}{0}{5}
+  \pxhy@next{3349}{\207\13}{7}{7}
+  \pxhy@next{3314}{\207\14}{0}{0}
+  \pxhy@next{3322}{\207\14}{1}{1}
+  \pxhy@next{334D}{\207\14}{2}{2}
+  \pxhy@next{3318}{\207\14}{3}{3}
+  \pxhy@next{3327}{\207\14}{4}{4}
+  \pxhy@next{3303}{\207\14}{5}{5}
+  \pxhy@next{3336}{\207\14}{6}{6}
+  \pxhy@next{3351}{\207\14}{7}{7}
+  \pxhy@next{3357}{\207\15}{0}{0}
+  \pxhy@next{330D}{\207\15}{1}{1}
+  \pxhy@next{3326}{\207\15}{2}{2}
+  \pxhy@next{3323}{\207\15}{3}{3}
+  \pxhy@next{332B}{\207\15}{4}{4}
+  \pxhy@next{334A}{\207\15}{5}{5}
+  \pxhy@next{333B}{\207\15}{6}{6}
+  \pxhy@next{339C}{\207\15}{7}{7}
+  \pxhy@next{339D}{\207\16}{0}{1}
+  \pxhy@next{338E}{\207\16}{2}{3}
+  \pxhy@next{33C4}{\207\16}{4}{4}
+  \pxhy@next{33A1}{\207\16}{5}{5}
+  \pxhy@next{337B}{\207\17}{6}{6}
+  \pxhy@next{301D}{\207\20}{0}{0}
+  \pxhy@next{301F}{\207\20}{1}{1}
+  \pxhy@next{2116}{\207\20}{2}{2}
+  \pxhy@next{33CD}{\207\20}{3}{3}
+  \pxhy@next{2121}{\207\20}{4}{4}
+  \pxhy@next{32A4}{\207\20}{5}{7}
+  \pxhy@next{32A7}{\207\21}{0}{1}
+  \pxhy@next{3231}{\207\21}{2}{3}
+  \pxhy@next{3239}{\207\21}{4}{4}
+  \pxhy@next{337E}{\207\21}{5}{5}
+  \pxhy@next{337D}{\207\21}{6}{6}
+  \pxhy@next{337C}{\207\21}{7}{7}
+  \pxhy@next{222E}{\207\22}{3}{3}
+  \pxhy@next{2211}{\207\22}{4}{4}
+  \pxhy@next{221F}{\207\23}{0}{0}
+  \pxhy@next{22BF}{\207\23}{1}{1}
+  \pxhy@next{FF61}{\24}{1}{7}
+  \pxhy@next{FF68}{\25}{0}{7}
+  \pxhy@next{FF70}{\26}{0}{7}
+  \pxhy@next{FF78}{\27}{0}{7}
+  \pxhy@next{FF80}{\30}{0}{7}
+  \pxhy@next{FF88}{\31}{0}{7}
+  \pxhy@next{FF90}{\32}{0}{7}
+  \pxhy@next{FF98}{\33}{0}{7}
+\else\ifnum\jis"2121="A1A1 % euc
+  \pxhy@next{FF61}{\216\24}{1}{7}
+  \pxhy@next{FF68}{\216\25}{0}{7}
+  \pxhy@next{FF70}{\216\26}{0}{7}
+  \pxhy@next{FF78}{\216\27}{0}{7}
+  \pxhy@next{FF80}{\216\30}{0}{7}
+  \pxhy@next{FF88}{\216\31}{0}{7}
+  \pxhy@next{FF90}{\216\32}{0}{7}
+  \pxhy@next{FF98}{\216\33}{0}{7}
+\fi\fi
+
+%% \pxhy@hkcdot
+\global\pxhy@csletcs{pxhy@hkcdot}{pxhy@uc/\number"FF65}
+
+\endgroup
+\fi                             %</extjis-map>
 %--------------------------------------- Redefine text commands for PD1
 
 %% \pxhy@pdfenc
