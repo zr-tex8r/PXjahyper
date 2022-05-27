@@ -845,6 +845,45 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   }
 \fi
 
+%--------------------------------------- Fix for high-byte protection
+\ifpxhy@etex
+\begingroup
+% Check for high-byte protection.
+\catcode"EF=\active \catcode`\^=7
+\global\let\pxhy@std@EF=^^ef
+\def\pxhy@next#1 #2\pxhy@end{%
+  \@tempswafalse
+  \def\pxhy@tmpa{#1}\edef\pxhy@tmpb{\string\protected}%
+  \ifx\pxhy@tmpa\pxhy@tmpb \@tempswatrue \fi
+}\expandafter\pxhy@next\meaning\pxhy@std@EF. \pxhy@end
+% Add a hook if protected.
+\if@tempswa
+
+  %% \pxhy@unprotect@high@bytes
+  \let\pxhy@unprotect@high@bytes\@empty
+  \def\pxhy@next#1#2{%
+    \expandafter\gdef\expandafter#1\expandafter{#2}%
+    \edef\pxhy@unprotect@high@bytes{%
+      \unexpanded\expandafter{\pxhy@unprotect@high@bytes}%
+      \unexpanded{\let#2#1}}%
+    \advance\@tempcnta\@ne
+  }
+  \@tempcnta="C2
+  \@whilenum{\@tempcnta<"F5}\do{%
+    \lccode"EF=\@tempcnta
+    \lowercase{\expandafter\pxhy@next\csname
+        pxhy@uhb/\string^^ef\endcsname^^ef}%
+  }
+  \xdef\pxhy@unprotect@high@bytes{%
+    \unexpanded{\ifx^^ef\pxhy@std@EF}%
+      \unexpanded\expandafter{\pxhy@unprotect@high@bytes}%
+    \unexpanded{\fi}%
+  }
+  \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@unprotect@high@bytes}
+
+\fi
+\endgroup
+\fi
 %--------------------------------------- Support for 'otfutf'
 \ifpxhy@otfutf
 
