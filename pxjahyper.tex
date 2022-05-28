@@ -16,8 +16,8 @@
 \bxtexlogoimport{*}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
-\newcommand{\PkgVersion}{1.1}
-\newcommand{\PkgDate}{2022/05/10}
+\newcommand{\PkgVersion}{1.2}
+\newcommand{\PkgDate}{2022/05/27}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -66,6 +66,12 @@
 
 \paragraph{使用可能なオプション}\mbox{}
 \begin{itemize}
+\item \Strong{設定キー記述}\Means
+  |\pxjahypersetup| 命令の引数に書く設定記述をパッケージオプションに
+  書くことができる。
+  例えば\\
+  |\usepackage[fallback=delete]{pxjahyper}|\\
+  と指定すると、表現不能文字を代替するゲタ文字が出力されなくなる。
 \item \Strong{ドライバオプション}\Means
   |dvipdfmx|、|dvips|、および |nodvidriver|%
   （ドライバ依存動作の無効化を明示的に指示、
@@ -96,10 +102,10 @@
   これにより元の既定値 |tounicode| は
   （1は効果がなく2は上書きされるため）
   実質的に無効化される。
-\item |fallback-geta|（既定）\Means
-  PDF文字列中で表現不可能な文字をゲタ記号（〓）に置き換える。
-\item |fallback-delete|\Means
-  PDF文字列中で表現不可能な文字を削除する。
+%\item |fallback-geta|（既定）\Means
+%  PDF文字列中で表現不可能な文字をゲタ記号（〓）に置き換える。
+%\item |fallback-delete|\Means
+%  PDF文字列中で表現不可能な文字を削除する。
 \item |otfmacros|（既定）\Means
   \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
   文字入力命令（|\ajMaru|、|\ajLig| 等）をPDF文字列中で
@@ -156,6 +162,29 @@
 自動的に実施される。
 
 %-------------------
+\subsection{設定}
+\label{ssec:setup}
+
+パッケージの動作の設定を |\pxjahypersetup| 命令で行える。
+
+\begin{quote}\small
+|\pxjahypersetup{|\Meta{キー}|=|\Meta{値}|,...}|
+\end{quote}
+
+有効な設定キーは以下の通り。
+
+\begin{itemize}
+\item |fallback=|\Meta{値}\Means
+  PDF文字列中で表現不可能な文字についての代替出力の方法を指定する。
+  \begin{itemize}
+  \item |geta|（既定）\Means
+    表現不可能な文字をゲタ記号（〓）に置き換える。
+  \item |delete|\Means
+    表現不可能な文字を削除する。
+  \end{itemize}
+\end{itemize}
+
+%-------------------
 \subsection{Unicode符号値による入力}
 \label{ssec:ux-command}
 
@@ -172,7 +201,7 @@ Unicode符号値入力用の命令が使っているものである。
 こちらを使う方が無難かもしれない。}
 
 \begin{itemize}
-\item |\Ux{|Unicode符号値16進|}|\Means
+\item |\Ux{|\Meta{Unicode符号値16進}|}|\Means
   その符号値の文字を出力する。
   具体的な動作は以下の通り：
   \begin{itemize}
@@ -187,7 +216,7 @@ Unicode符号値入力用の命令が使っているものである。
   は、当該のUnicode文字に対応するJIS符号系の文字を書いたのと同等になる。
   JIS符号系にない文字の場合は出力できないので警告を出しだ上で
   ゲタ記号（〓）を出力%
-  \footnote{|fallback-delete| オプションが有効の場合は何も出力しない。
+  \footnote{設定キー |fallback| の値が |delete| の場合は何も出力しない。
     以降で「ゲタ記号を出力」とある場合についても同様。}%
   する。
   \end{itemize}
@@ -207,7 +236,10 @@ PDF文字列中の動作が以下のように変更される。
 
 \begin{itemize}
 \item |\Ux| 命令（\ref{ssec:ux-command}節参照）が有効の場合は、
-  |\Ux| と同じ動作になる。
+  |\Ux| と同じ動作
+  \footnote{もし |\Ux| の出力がゲタ記号になる場合は、
+    |\UTF| もゲタ記号になる。}%
+  になる。
 \item それ以外の場合は、
   常に（警告を出した上で）ゲタ記号を出力する。
   %\Note {\pLaTeX}ではtounicodeの機能でUnicode文字を出力できないため。
@@ -294,11 +326,17 @@ PDF文字列中で |\CID| が“可能な限り”使えるようにする。
 \end{itemize}
 
 これらの命令において、符号値は16進数で指定する。
-「JIS符号値」は {\upLaTeX} では使われないので省略して
+Unicode文字の出力が可能な状況
+（エンジンが{\upLaTeX}の場合は常に該当する）
+では「JIS符号値」は使われないので省略して
 （空にして）もよい
+\footnote{一応、「JIS符号値」が使われることが確実な状況では
+「Unicode符号値」も省略可能であるが、
+そのような状況であるかの判断は困難であるため、
+「Unicode符号値」の省略は推奨されない。}%
 （或いはそもそも JIS~X~0208 にない文字の場合は省略する）。
-逆に「Unicode符号値」は {\pLaTeX} の動作でかつ「JIS符号値」が
-指定されている場合は省略してよい。
+%逆に「Unicode符号値」は {\pLaTeX} の動作でかつ「JIS符号値」が
+%指定されている場合は省略してよい。
 
 例えば、以下のように定義しておくと、
 PDF文字列中で |\textschwa|（schwa記号）や |\d{t}|（\d{t}）が
@@ -320,8 +358,8 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \Pkg{hyperref}では基本的なテキスト装飾命令
 （多くは{\LaTeX}カーネルが提供するもの）
 について、「PDF文字列として扱う場合は自動的に無力化
-%\footnote{例えば、“|\textit{text}|”や“|{\large text}|”は
-%  単に“|text|”と書いたものと見なされる。}
+\footnote{例えば、“|\textit{text}|”や“|{\large text}|”は
+  単に“|text|”と書いたものと見なされる。}
 する」機構を実装している。
 これにより、例えば節見出しのテキストに“|\textit{text}|”が
 含まれていたとすると、

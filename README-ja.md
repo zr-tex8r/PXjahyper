@@ -73,6 +73,14 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.2  〈2022/05/27〉
+      - LaTeX カーネル 2022/06/01 版への対応。
+      - `\pxjahypersetup` を追加。
+      - 設定キー `fallback` を追加。
+      - `\pxDeclarePdfTextCommand/Composite` の不具合を修正。
+      - (試験的) 設定キー `extjis` を追加。
+      - (試験的) 設定キー `ajhankaku-chars` を追加。
+
   * Version 1.1  〈2022/05/10〉
       - オプション `fallback-geta`/`fallback-delete` を追加。
       - `\Uchar` を利用したUnicode文字出力をサポート。
