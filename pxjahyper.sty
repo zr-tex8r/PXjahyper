@@ -580,8 +580,10 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     \ifnum0<\mag \ifnum32768>\mag % \mag is in valid range
       \begingroup
         \@ifundefined{stockwidth}{}{%else
-          \paperwidth=\stockwidth
-          \paperheight=\stockheight
+          \ifdim\stockwidth>\z@ \ifdim\stockheight>\z@
+            \paperwidth=\stockwidth
+            \paperheight=\stockheight
+          \fi\fi
         }%
         \@tempcnta=\mag \advance\@tempcnta100000
         \def\pxhy@next1#1#2#3#4#5\relax{%
@@ -590,10 +592,12 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
         \expandafter\pxhy@next\the\@tempcnta\relax
         \paperwidth=\pxhy@tmpa\paperwidth
         \paperheight=\pxhy@tmpa\paperheight
-        \edef\pxhy@tmpa{%
-          \noexpand\pxhy@begin@dvi@hook{%
-            \special{papersize=\the\paperwidth,\the\paperheight}}%
-        }\pxhy@tmpa
+        \ifdim\paperwidth>\z@ \ifdim\paperheight>\z@
+          \edef\pxhy@tmpa{%
+            \noexpand\pxhy@begin@dvi@hook{%
+              \special{papersize=\the\paperwidth,\the\paperheight}}%
+          }\pxhy@tmpa
+        \fi\fi
       \endgroup
     \fi\fi
   \fi
