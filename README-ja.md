@@ -73,6 +73,9 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.2a 〈2022/10/19〉
+      - バグ修正。(thanks: @h20y6m さん)
+
   * Version 1.2  〈2022/05/27〉
       - LaTeX カーネル 2022/06/01 版への対応。
       - `\pxjahypersetup` を追加。

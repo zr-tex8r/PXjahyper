@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesFile{pxjahyper-uni.def}[2022/05/27 v1.2]
+\ProvidesFile{pxjahyper-uni.def}[2022/10/19 v1.2a]
 \providecommand{\bxDebug}[1]{}
 
 %--------------------------------------- environment check
