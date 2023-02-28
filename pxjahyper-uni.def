@@ -1,7 +1,7 @@
 %%
 %% This is file 'pxjahyper-uni.def'.
 %% 
-%% Copyright (c) 2012-2022 Takayuki YATO (aka. "ZR")
+%% Copyright (c) 2012-2023 Takayuki YATO (aka. "ZR")
 %%   GitHub:   https://github.com/zr-tex8r
 %%   Twitter:  @zr_tex8r
 %%
@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesFile{pxjahyper-uni.def}[2022/10/19 v1.2a]
+\ProvidesFile{pxjahyper-uni.def}[2023/03/01 v1.3]
 \providecommand{\bxDebug}[1]{}
 
 %--------------------------------------- environment check

@@ -73,6 +73,10 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.3  〈2023/03/01〉
+      - “pTeX + hyperref unicode モード”を正式にサポートする。これに
+        伴い、unicode モードに関する警告を削除。
+
   * Version 1.2a 〈2022/10/19〉
       - バグ修正。(thanks: @h20y6m さん)
 

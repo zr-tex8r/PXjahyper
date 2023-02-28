@@ -1,7 +1,7 @@
 %%
 %% This is file 'pxjahyper.sty'.
 %%
-%% Copyright (c) 2012-2022 Takayuki YATO (aka. "ZR")
+%% Copyright (c) 2012-2023 Takayuki YATO (aka. "ZR")
 %%   GitHub:   https://github.com/zr-tex8r
 %%   Twitter:  @zr_tex8r
 %%
@@ -10,7 +10,7 @@
 
 %% package declaration
 \NeedsTeXFormat{pLaTeX2e}
-\ProvidesPackage{pxjahyper}[2022/10/19 v1.2a]
+\ProvidesPackage{pxjahyper}[2023/03/01 v1.3]
 \def\pxhy@pkgname{pxjahyper}
 \providecommand{\bxDebug}[1]{}
 
@@ -1174,10 +1174,11 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
    {\pxhy@revoke@pdf@tcc{#1}{#2}}%
 }
 
-%% \pxhy@revoke@pdf@tc
+%% \pxhy@revoke@pdf@tc\CS
 \@onlypreamble\pxhy@revoke@pdf@tc
 \def\pxhy@revoke@pdf@tc#1{%
   \expandafter\let\csname\pxhy@pdfenc\string#1\endcsname\@undefined
+  % if current \CS defaults to PD1/PU, hedge to '?'.
   \pxhy@make@txtcmd\pxhy@tmpa{\pxhy@pdfenc}#1%
   \ifx#1\pxhy@tmpa
     \pxhy@make@txtcmd#1?#1%

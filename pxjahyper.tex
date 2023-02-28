@@ -13,12 +13,12 @@
   pdftitle={pxjahyperパッケージ},
   pdfauthor={八登崇之}}
 \usepackage{bxtexlogo}
-\bxtexlogoimport{*}
+\bxtexlogoimport{*,TL-e}
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
 \usepackage[verb]{bxghost}
-\newcommand{\PkgVersion}{1.2a}
-\newcommand{\PkgDate}{2022/10/19}
+\newcommand{\PkgVersion}{1.3}
+\newcommand{\PkgDate}{2023/03/01}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -42,19 +42,23 @@
 \begin{itemize}
 \item dvipdfmx用の「tounicode special」について、
   内部漢字コードに応じて適切なものを出力する。
-\item PDF文字列の中でLICR（|\"a|や|\textsection|等の
-  文字出力の命令）が正しく機能するようにする。
-  ただし、エンジンが{\pTeX}の場合は、out2uni/convbkmk%
-  （および試験的機能の“force-unicode”）を利用
-  する場合を除き、JIS~X~0208にない文字は出力できない
-  （hyperrefの警告が出る）。
+\item PDF文字列の中で{\LaTeX}カーネル（|\"a|や|\textsection|等）
+  や\Pkg{japanese-otf}パッケージ（|\UTF|や|\ajMaru|等）の
+  文字出力用命令が“可能な限り”正しく機能するようにする。
+  %ただし、エンジンが{\pTeX}の場合は、out2uni/convbkmk%
+  %（および試験的機能の“force-unicode”）を利用
+  %する場合を除き、JIS~X~0208にない文字は出力できない
+  %（hyperrefの警告が出る）。
 \item {\TeX}の版面拡大機能が使われている
-  （|\mag|が1000でない；典型的には\Pkg{jsclasses}の
-  文書クラスで基底フォントサイズが10\,pt以外である）
-  場合に、\Pkg{hyperref}が出力するpapersize specialの
+  （|\mag|値が1000でない）場合
+  \footnote{典型的には\Pkg{jsclasses}の
+    文書クラスで基底フォントサイズを10\,pt以外に設定している場合。}%
+  には\Pkg{hyperref}が出力するpapersize specialの
   紙面サイズの値が不正になるが、この場合に|\mag|値を
   考慮して求めた正しいサイズによるpapersize specialを
   改めて出力する。
+\item \Pkg{hyperref}が行う「テキスト装飾命令の無力化」の
+  対象に、{(u)\pLaTeX}特有のいくつかの命令を追加する。
 \end{itemize}
 
 %===========================================================
@@ -70,17 +74,19 @@
 \item \Strong{設定キー記述}\Means
   |\pxjahypersetup|命令の引数に書く設定記述をパッケージオプションに
   書くことができる。
-  例えば\\
-  |\usepackage[fallback=delete]{pxjahyper}|\\
+  例えば
+\begin{quote}\small\begin{verbatim}
+\usepackage[fallback=delete]{pxjahyper}
+\end{verbatim}\end{quote}
   と指定すると、表現不能文字を代替するゲタ文字が出力されなくなる。
 \item \Strong{ドライバオプション}\Means
   |dvipdfmx|、|dvips|、および|nodvidriver|%
   （ドライバ依存動作の無効化を明示的に指示、
   現状ではほとんどの動作が無効になる）
   が指定できる。
-  \Note 1.0版において|nodvidriver|の別名の|none|は
+  \Note 1.0版において|nodvidriver|の非推奨の別名の|none|は
     \Strong{廃止}された。
-    （0.5版から非推奨だった。）
+  %（0.5版から非推奨だった。）
 \item |resetdvidriver|（既定）\Means
   ドライバオプションを\Pkg{hyperref}のドライバ指定から自動的に判定する。
   \Note 1.1版において名前を|auto|から|resetdvidriver|に変更した。
@@ -88,7 +94,8 @@
 \item |tounicode|（既定）\Means
   以下の2つの設定を行う。
   \begin{enumerate}
-  \item ドライバが|dvipdfmx|である場合は「tounicode special」を発行する。
+  \item ドライバが|dvipdfmx|である場合は適切な
+    「tounicode special」を発行する。
     \Note この設定は|notounicode|オプションにより打ち消される。
   \item 「tounicode special」を前提にした出力を行う。
     \Note この設定は|out2uni|・|convbkmk|オプションと排他である。
@@ -100,13 +107,22 @@
 \item |convbkmk|\Means
   convbkmkフィルタを使うことを前提にした出力を行う。
   \Note ドライバが|dvips|の場合は既定で|convbkmk|が有効になる。
-  これにより元の既定値|tounicode|は
-  （1は効果がなく2は上書きされるため）
-  実質的に無効化される。
+  これにより元の既定値|tounicode|は実質的に
+  \footnote{|tounicode|の説明中の項目1の機能はdvipsでは効果がなく、
+    また項目2の機能は上書きされるため。}%
+  無効化される。
 %\item |fallback-geta|（既定）\Means
-%  PDF文字列中で表現不可能な文字をゲタ記号（〓）に置き換える。
+%  PDF文字列中で表現不能な文字をゲタ記号（〓）に置き換える。
 %\item |fallback-delete|\Means
-%  PDF文字列中で表現不可能な文字を削除する。
+%  PDF文字列中で表現不能な文字を削除する。
+\item |papersize|（既定）\Means
+  papersize specialの補正を有効にする。
+\item |nopapersize|\Means
+  |papersize|の否定。
+\end{itemize}
+
+\paragraph{上級者向けオプション}\mbox{}
+\begin{itemize}
 \item |otfmacros|（既定）\Means
   \Pkg{japanese-otf}付属の\Pkg{ajmacros}パッケージが提供する
   文字入力命令（|\ajMaru|、|\ajLig|等）をPDF文字列中で
@@ -116,14 +132,6 @@
 \item |nootfmacros|\Means
   |otfmacros|の否定。
   \Note 0.6版より既定を|otfmacros|に変更した。
-\item |papersize|（既定）\Means
-  papersize specialの補正を有効にする。
-\item |nopapersize|\Means
-  |papersize|の否定。
-\end{itemize}
-
-\paragraph{上級者向けオプション}\mbox{}
-\begin{itemize}
 \item |otfutf|（既定）\Means
   \Pkg{japanese-otf}パッケージの|\UTF|命令をPDF文字列中で
   使えるようにする。
@@ -151,9 +159,9 @@
   {\upTeX}でのToUnicode CMapとしてUTF8-UCS2を用いる。
   \Note 0.3a版より既定を|bigcode|に変更した。
 \item |force-unicode|\Means
-  \Pkg{hyperref}の|unicode|オプションが有効でかつエンジンが{\pTeX}で
-  ある状況（0.9版よりサポートが追加されたが\Strong{試験的}である）
-  において出る警告を抑止する。
+  このオプションは何もしない。
+  \Note {\pLaTeX}での“unicodeモード”が正式にサポートされたため
+  このオプションは不要になった。
 \end{itemize}
 
 %===========================================================
@@ -176,13 +184,15 @@
 
 \begin{itemize}
 \item |fallback=|\Meta{値}\Means
-  PDF文字列中で表現不可能な文字についての代替出力の方法を指定する。
+  PDF文字列中で表現不能な文字についての代替出力の方法を指定する。
   \begin{itemize}
   \item |geta|（既定）\Means
-    表現不可能な文字をゲタ記号（〓）に置き換える。
+    表現不能な文字をゲタ記号（〓）に置き換える。
   \item |delete|\Means
-    表現不可能な文字を削除する。
+    表現不能な文字を削除する。
   \end{itemize}
+  \Note 以下、パッケージ動作の解説中で「ゲタ記号を出力」と
+    ある場合は実際にはこの設定に従う。
 \end{itemize}
 
 %-------------------
@@ -213,16 +223,13 @@ Unicode符号値入力用の命令が使っているものである。
   当該のUnicode文字自体を書いたのと同等になる。
   \item 上記以外で、{\TeX} Live 2022以降の{\pLaTeX}の場合
   \footnote{正確にいうと、|\Uchar|と|\ucs|プリミティブをもつ
-    {\epTeX}エンジンである場合。}%
+    {\TLe-(u)\pTeX}エンジンである場合。}%
   は、当該のUnicode文字に対応するJIS符号系の文字を書いたのと同等になる。
   JIS符号系にない文字の場合は出力できないので警告を出しだ上で
-  ゲタ記号（〓）を出力%
-  \footnote{設定キー|fallback|の値が|delete|の場合は何も出力しない。
-    以降で「ゲタ記号を出力」とある場合についても同様。}%
-  する。
+  ゲタ記号を出力する。
   \end{itemize}
-  \item どの条件にも当てはまらない場合は、|\Ux|は無効
-  （定義されない）になる。
+  \item どの条件にも当てはまらない場合は、|\Ux|は無効になる
+  （定義されない）。
 \end{itemize}
 
 %-------------------
@@ -303,9 +310,9 @@ PDF文字列中で|\CID|が“可能な限り”使えるようにする。
 \Note |otfmacros|を有効にする場合は|otfcid|も有効にする必要がある。
 （従って|otfcid|と同じ前提条件が課される。）
 |otfcid|が無効な場合は|otfmacros|も無効になる。
-\Note \Pkg{ajmacros}パッケージの多くの命令は“脆弱（fragile）”である。
+\Note \Pkg{ajmacros}パッケージの多くの命令は脆弱（fragile）である。
 そのため、節見出し（|\section|等の引数）で|\ajMaru|等の命令を
-使いたい場合は、命令の前に|\protect|付ける必要がある。
+使いたい場合は、命令の前に|\protect|を付ける必要がある。
 \footnote{ちなみに、引数がPDF文字列として解釈される場合には、
   |\protect|は全く結果に影響しない。}
 
@@ -418,9 +425,9 @@ PDF文字列と版面出力の両方に使われるテキスト（節見出し�
 \item \Pkg{hyperref}の（|pdftitle|等の）パッケージオプション中での
   和文文字の処理は失敗する。
   このため、文書情報は|\hypersetup|命令で指定する必要がある。
-\item {\pLaTeX}における“unicodeモード”対応動作は試験的機能の
-  扱いであるため、その旨の警告が表示される。
-  この警告は|force-unicode|オプションを指定すれば抑止できる。
+%\item {\pLaTeX}における“unicodeモード”対応動作は試験的機能の
+%  扱いであるため、その旨の警告が表示される。
+%  この警告は|force-unicode|オプションを指定すれば抑止できる。
 \end{itemize}
 
 \end{document}
