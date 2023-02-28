@@ -51,6 +51,7 @@
 \newif\ifpxhy@otfmacros
 \newif\ifpxhy@Uchar@avail
 \newif\ifpxhy@ucs@avail
+\newif\ifpxhy@toucs@avail
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
 \newif\ifpxhy@fallback@geta
@@ -289,6 +290,8 @@
 \pxhy@check\Uchar{\pxhy@Uchar@availtrue}
 %% pxhy@ucs@avail switch
 \pxhy@check\ucs{\pxhy@ucs@availtrue}
+%% pxhy@toucs@avail switch
+\pxhy@check\toucs{\pxhy@toucs@availtrue}
 
 %% pxhy@extjis@map switch
 % Note that 'tounicode' is necessary.
@@ -1161,6 +1164,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
 \newcommand*\pxDeclarePdfTextCommand[3]{%
+  \pxhy@prepare@txtcmd#1%
   \pxhy@decl@pdf@tc{#2}{#3}%
    {\DeclareTextCommand{#1}{\pxhy@pdfenc}}%
    {\pxhy@revoke@pdf@tc{#1}}%
@@ -1169,6 +1173,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %%<+> \pxDeclarePdfTextComposite{\CS}{<arg>}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextComposite
 \newcommand*\pxDeclarePdfTextComposite[4]{%
+  \pxhy@prepare@txtcmd#1%
   \pxhy@decl@pdf@tc{#3}{#4}%
    {\DeclareTextCompositeCommand{#1}{\pxhy@pdfenc}{#2}}%
    {\pxhy@revoke@pdf@tcc{#1}{#2}}%
@@ -1202,8 +1207,8 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %% \pxhy@decl@pdf@tc
 \@onlypreamble\pxhy@decl@pdf@tc
 \def\pxhy@decl@pdf@tc#1#2{%
-  \edef\pxhy@next{{#1}{\ifx\pxhy@mt#2\pxhy@mt FFFD\else#2\fi}}%
-  \expandafter\pxhy@get@body\pxhy@next
+  \edef\pxhy@next{{#1}{#2}}%
+  \uppercase\expandafter{\expandafter\pxhy@get@body\pxhy@next}%
   \ifx\pxhy@body\@undefined
     \let\pxhy@next\@secondoftwo
   \else
@@ -1217,21 +1222,60 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   #2{#1}%
 }
 
+%% \pxhy@prepare@txtcmd\CS
+% If \CS is defined and not an encoding-aware command,
+% let \[?\CS] be equivalent to \CS, so that doing
+% \DeclareTextCommand\CS... will keep the original meaning of \CS.
+\@onlypreamble\pxhy@prepare@txtcmd
+\def\pxhy@next#1#2\pxhy@end{%#1='\',#2='cmd'
+  \def\pxhy@prepare@txtcmd##1{%
+    \ifx##1\@undefined\else
+      \def\pxhy@tmpb{\pxhy@prepare@txtcmd@c##1}%
+      \expandafter\pxhy@prepare@txtcmd@a\meaning##1{}->#1 \pxhy@end
+    \fi
+  }%
+  \def\pxhy@prepare@txtcmd@a##1->#1##2 ##3\pxhy@end{%
+    \pxhy@prepare@txtcmd@b##2_{}-#2_\pxhy@end
+  }%
+  \def\pxhy@prepare@txtcmd@b##1-#2_##2\pxhy@end{%
+    % if not an encoding-aware command...
+    \ifx\pxhy@mt##2\pxhy@mt \pxhy@tmpb \fi
+  }%
+}\expandafter\pxhy@next\string\cmd\pxhy@end
+\def\pxhy@prepare@txtcmd@c#1{%
+  \expandafter\let\csname?\string#1\endcsname#1%
+}
+
 %% \pxhy@get@body{<jis>}{<ucs>}
 \@onlypreamble\pxhy@get@body
+\@onlypreamble\pxhy@get@body@a
+\def\pxhy@get@body#1#2{%
+  \edef\pxhy@next{%
+   {\ifx\pxhy@mt#1\pxhy@mt -1\else \jis"#1\fi}%
+   {\ifx\pxhy@mt#2\pxhy@mt
+      \ifx\pxhy@mt#1\pxhy@mt -1%
+      \else\ifpxhy@uptex \jis"#1%
+      \else\ifpxhy@toucs@avail \toucs\jis"#1%
+      \else -1\fi\fi\fi
+    \else \number"#2%
+    \fi}}%
+  \expandafter\pxhy@get@body@a\pxhy@next
+}
 \ifpxhy@uptex                   %<*upTeX>
-  \def\pxhy@get@body#1#2{%
-    \pxhy@get@jchar{\ucs"#2}%
+  \def\pxhy@get@body@a#1#2{%
+    \pxhy@get@jchar{\ifnum#2<\z@ "FFFD\else#2\fi}%
     \let\pxhy@body\pxhy@jchar
   }%
 \else\ifpxhy@hy@unicode         %<*unicode>
-  \def\pxhy@get@body#1#2{%
-    \def\pxhy@body{\unichar{"#2}}%
+  \def\pxhy@get@body@a#1#2{%
+    \edef\pxhy@body{%
+      \noexpand\unichar{\ifnum#2<\z@ "FFFD\else#2\fi}}%
   }%
 \else\ifpxhy@uniescape          %<*uniescape>
     \def\pxhy@get@body#1#2{%
       \ifx\pxhy@mt#1\pxhy@mt
-        \def\pxhy@body{\0x#2}%
+        \edef\pxhy@body{\noexpand\0x%
+          \ifx\pxhy@mt#2\pxhy@mt FFFD\else#2\fi}%
       \else
         \pxhy@get@jchar{\jis"#1}%
         \let\pxhy@body\pxhy@jchar
@@ -1239,14 +1283,14 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     }%
 \else                           %<*!>
   \chardef\pxhy@cc@jis@only=1
-    \def\pxhy@get@body#1#2{%
-      \ifx\pxhy@mt#1\pxhy@mt
-        \let\pxhy@body\@undefined
-      \else
-        \pxhy@get@jchar{\jis"#1}%
-        \let\pxhy@body\pxhy@jchar
-      \fi
-    }%
+  \def\pxhy@get@body@a#1#2{%
+    \ifnum#1<\z@
+      \let\pxhy@body\@undefined
+    \else
+      \pxhy@get@jchar{#1}%
+      \let\pxhy@body\pxhy@jchar
+    \fi
+  }%
 \fi\fi\fi                       %</>
 
 %%%%%%%%%%%%%%%%%%%% the definitions
