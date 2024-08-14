@@ -92,7 +92,7 @@
 \DeclareOption{resetdvidriver}{%
   \let\pxhy@driver\@undefined
 }
-\DeclareOption{autodvidriver}{%
+\DeclareOption{autodvidriver}{% DEPRECATED
   \let\pxhy@driver\@undefined
 }
 \DeclareOption{auto}{% DEPRECATED
@@ -172,14 +172,13 @@
 \DeclareOption{nootfmacros}{%
   \pxhy@otfmacrosfalse
 }
-\DeclareOption{fallback-geta}{%
+\DeclareOption{fallback-geta}{% DEPRECATED
   \pxjahypersetup{fallback=geta}%
 }
-\DeclareOption{fallback-delete}{%
+\DeclareOption{fallback-delete}{% DEPRECATED
   \pxjahypersetup{fallback=delete}%
 }
-\DeclareOption{force-unicode}{%
-  \let\pxhy@force@unicode=t
+\DeclareOption{force-unicode}{% DEPRECATED
 }
 \DeclareOption{disable-Ux}{% for debug
   \let\pxhy@disable@Ux=t
@@ -314,6 +313,8 @@
 \@ifl@t@r\fmtversion{2021/11/15}{%
   \chardef\pxhy@hook@system=2
 }{\@ifl@t@r\fmtversion{2020/02/02}{%
+  % NB. We need to support this intermediate version, because
+  % the hook order matters here.
   \chardef\pxhy@hook@system=1
 }{}}
 
@@ -331,13 +332,7 @@
   \pxhy@uniescapetrue
 \fi\fi
 
-% hyperref 'unicode' is allowed only on upLaTeX.
-\ifnum0\ifpxhy@hy@unicode\ifpxhy@uptex\else
-    \ifx t\pxhy@force@unicode\else1\fi\fi\fi>\z@
-%  \PackageWarningNoLine\pxhy@pkgname
-%   {The support for the hyperref 'unicode' mode\MessageBreak
-%    on the pTeX engine is currently experimental}%
-\fi
+% hyperref 'unicode' mode
 \ifpxhy@hy@unicode
   \pxhy@uniescapefalse
   %\pxhy@otfutftrue
@@ -432,8 +427,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \fi
 
 %% \pxhy@geta : GETA MARK
-\pxhy@get@jchar{\jis"222E}
-\let\pxhy@geta\pxhy@jchar
+\pxhy@let@jchar@jc\pxhy@geta{222E}
 
 %% \pxhy@print@geta
 \def\pxhy@print@geta{%
@@ -763,6 +757,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \ifpxhy@hy@unicode              %<*unicode>
 
   %% \pxhy@Ux
+  % In hyperref "unicode" mode, \unichar is used.
   \def\pxhy@Ux{\pxhy@uchex}%
   \pxhy@utfXVIfalse
   \def\pxhy@uchex@out#1{%
@@ -773,6 +768,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \ifpxhy@uptex
 
     %% \pxhy@Ux
+    % On upTeX with \Uchar, \Uchar is used.
     \def\pxhy@Ux{\pxhy@uchex}
     \pxhy@utfXVIfalse
     \def\pxhy@uchex@out#1{\Uchar"#1 }
@@ -780,27 +776,30 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \else\ifpxhy@ucs@avail
 
     %% \pxhy@Ux
+    % On pTeX with \Uchar and \ucs, we convert the Unicode value to
+    % an internal-code value (using \ucs) and apply \Uchar to it.
     \def\pxhy@Ux{\pxhy@uchex}
     \pxhy@utfXVIfalse
     \def\pxhy@uchex@out#1{%
       \expandafter\pxhy@uchex@out@a\ucs"#1\pxhy@mk{#1}%
     }
     \chardef\pxhy@max@asc="7F
-    \def\pxhy@uchex@out@a#1\pxhy@mk#2{%
-      \ifnum#1<\z@
-        \ifnum"#2>\pxhy@max@asc
+    \def\pxhy@uchex@out@a#1\pxhy@mk#2{% #1:internal #2:Unicode
+      \ifnum#1<\z@ % not in internal (or JIS)
+        \ifnum"#2>\pxhy@max@asc % not ASCII
           \ifpxhy@extjis@use
+            % try special conversion
             \expandafter\pxhy@uchex@out@b\csname
                 pxhy@uc/\number"#2\endcsname{#2}%
           \else \pxhy@uchex@out@b\relax{#2}%
           \fi
-        \else \Uchar"#2
+        \else \Uchar"#2 % ASCII
         \fi
-      \else \Uchar#1
+      \else \Uchar#1 % in internal-code
       \fi
     }
-    \def\pxhy@uchex@out@b#1#2{%
-      \ifx#1\relax
+    \def\pxhy@uchex@out@b#1#2{% #2:Unicode
+      \ifx#1\relax % not supported
         \@nameuse{U+#2}%
         \pxhy@print@geta
       \else #1%
@@ -811,6 +810,9 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \else\ifpxhy@uptex              %<*upTeX>
 
   %% \pxhy@Ux
+  % On upTeX without \Uchar, we convert the Unicode value to a ja-char
+  % token using \pxhy@get@jchar, which is not fully expandable.
+  % So we need \pdfstringdefPostHook.
   \def\pxhy@Ux{\pxhy@uchex}%
   \pxhy@utfXVIfalse
 
@@ -1739,14 +1741,14 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   %% register to 'disable' list
   \ltx@GlobalPrependToMacro\pdfstringdefPreHook{\pxhy@disable@tc@commands}
 
-\else                           %<*!textcmd>
+\else                           %<*!charcmds>
 
 \@onlypreamble\pxDeclarePdfTextCommand
 \newcommand*\pxDeclarePdfTextCommand[3]{}
 \@onlypreamble\pxDeclarePdfTextComposite
 \newcommand*\pxDeclarePdfTextComposite[4]{}
 
-\fi                             %</textcmd>
+\fi                             %</charcmds>
 %--------------------------------------- Enable hyperref unicode
 \ifpxhy@hy@unicode
 
