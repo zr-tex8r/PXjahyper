@@ -55,6 +55,7 @@
 \let\pxhy@jsclasses@name\relax
 \newif\ifpxhy@jlreq@cls
 \newif\ifpxhy@fallback@geta
+\newif\ifpxhy@fallback@warn
 \newif\ifpxhy@extjis@map
 \newif\ifpxhy@extjis@use
 \newif\ifpxhy@ajhankaku@chars
@@ -196,6 +197,11 @@
 }
 \let\pxhy@kv@fallback@@geta\pxhy@fallback@getatrue
 \let\pxhy@kv@fallback@@delete\pxhy@fallback@getafalse
+% 'fallback-warn=<bool>'
+\pxhy@fallback@warntrue
+\define@key{\pxhy@pkgname}{fallback-warn}[true]{%
+  \pxhy@handle@key{fallback-warn}{#1}{fallback@warn#1}%
+}
 % 'extjis=<bool>'
 \pxhy@extjis@usetrue
 \define@key{\pxhy@pkgname}{extjis}[true]{%
