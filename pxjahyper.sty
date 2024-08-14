@@ -919,7 +919,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \fi
 
 %--------------------------------------- Fix for high-byte protection
-\ifpxhy@etex
+\ifpxhy@hy@unicode\else \ifpxhy@etex
 \begingroup
 % Check for high-byte protection.
 \catcode"EF=\active \catcode`\^=7
@@ -956,7 +956,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 \fi
 \endgroup
-\fi
+\fi\fi
 %--------------------------------------- Support for 'otfutf'
 \ifpxhy@otfutf
 
