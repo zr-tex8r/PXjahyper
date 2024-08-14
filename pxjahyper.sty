@@ -179,6 +179,8 @@
   \pxjahypersetup{fallback=delete}%
 }
 \DeclareOption{force-unicode}{% DEPRECATED
+  \PackageWarningNoLine\pxhy@pkgname
+   {'force-unicode' is DEPRECATED and ignored}%
 }
 \DeclareOption{disable-Ux}{% for debug
   \let\pxhy@disable@Ux=t
