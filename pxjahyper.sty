@@ -753,6 +753,29 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \noexpand\pxhy@uchex@out{\pxhy@uc@REPL}%
 }
 
+%--------------------------------------- Unavailable characters
+
+%%<+> \pxjahyperBadCharacter{<label>}
+\newcommand*\pxjahyperBadCharacter[1]{%
+  \ifpxhy@fallback@warn
+    % issue a warning
+    \pxhy@bad@character@a{#1}%
+  \fi
+  \pxhy@print@geta
+}
+\def\pxhy@bad@character@a#1{%
+  % Here the control sequence with name <label> is supposed to be
+  % undefined. This token is intentionally left in the stream.
+  % Then this unknown token will be detected by the hyperref process
+  % and cause it to issue an warning
+  % "Token not allowed in a PDF string (... removing `\<label>'".
+  \expandafter\ifx\csname<#1>\endcsname\relax
+    \csname<#1>\endcsname
+  % If the token should be defined, it is replaced for safety.
+  \else \csname pxhy@<#1>\endcsname
+  \fi
+}
+
 %--------------------------------------- Hooks to pdfstringdef
 
 %% variables
@@ -808,8 +831,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     }
     \def\pxhy@uchex@out@b#1#2{% #2:Unicode
       \ifx#1\relax % not supported
-        \@nameuse{U+#2}%
-        \pxhy@print@geta
+        \pxjahyperBadCharacter{U+#2}%
       \else #1%
       \fi
     }
@@ -973,8 +995,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \def\pxhy@UTF{\pxhy@uchex}
   \pxhy@utfXVIfalse
   \def\pxhy@uchex@out#1{%
-    \@nameuse{U+#1}% issue a warning
-    \pxhy@print@geta
+    \pxjahyperBadCharacter{U+#1}%
   }
 \else
   \let\pxhy@UTF\pxhy@Ux
@@ -1022,16 +1043,14 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 }
 \ifx\pxhy@Ux\@undefined
   \def\pxhy@cid@aux#1\pxhy@mk#2{%
-    \@nameuse{CID+#2}% issue a warning
-    \pxhy@print@geta
+    \pxjahyperBadCharacter{CID+#2}%
   }
 \else
 \def\pxhy@cid@aux#1\pxhy@mk#2{%
   \ifnum"#1>\z@
     \pxhy@Ux{#1}%
   \else
-    \@nameuse{CID+#2}%
-    \pxhy@print@geta
+    \pxjahyperBadCharacter{CID+#2}%
   \fi
 }
 \fi
