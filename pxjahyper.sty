@@ -1076,24 +1076,22 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 %% \pxhy@CID{<cid>}
 \def\pxhy@CID#1{%
-  \expandafter\expandafter\expandafter\pxhy@cid@aux
-      \bxjaCidToUcsHex{#1}\pxhy@mk{\pxhy@xdetokenize{#1}}%
+  \pxhy@triexpandafter\pxhy@cid@aux\bxjaCidToUcsHex{#1}@f{#1}%
 }
 %% \pxhy@fast@CID{<cid>}
 \def\pxhy@fast@CID#1{%
-  \expandafter\expandafter\expandafter\pxhy@cid@aux
-      \bxjaFastCidToUcsHex{#1}\pxhy@mk{\number#1}%
+  \pxhy@triexpandafter\pxhy@cid@aux\bxjaFastCidToUcsHex{#1}@t{#1}%
 }
 \ifx\pxhy@Ux\@undefined
-  \def\pxhy@cid@aux#1\pxhy@mk#2{%
-    \pxjahyperBadCharacter{CID+#2}%
+  \def\pxhy@cid@aux#1@#2#3{%
+    \pxhy@fallback@num{CID+}#2{#3}%
   }
 \else
-\def\pxhy@cid@aux#1\pxhy@mk#2{%
+\def\pxhy@cid@aux#1@#2#3{%
   \ifnum"#1>\z@
     \pxhy@Ux{#1}%
   \else
-    \pxjahyperBadCharacter{CID+#2}%
+    \pxhy@fallback@num{CID+}#2{#3}%
   \fi
 }
 \fi
