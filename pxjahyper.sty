@@ -56,6 +56,7 @@
 \newif\ifpxhy@jlreq@cls
 \newif\ifpxhy@fallback@geta
 \newif\ifpxhy@fallback@warn
+\newif\ifpxhy@fallback@cidm
 \newif\ifpxhy@extjis@map
 \newif\ifpxhy@extjis@use
 \newif\ifpxhy@ajhankaku@chars
@@ -201,6 +202,11 @@
 \pxhy@fallback@warntrue
 \define@key{\pxhy@pkgname}{fallback-warn}[true]{%
   \pxhy@handle@key{fallback-warn}{#1}{fallback@warn#1}%
+}
+% 'fallback-cidm=<bool>'
+\pxhy@fallback@cidmtrue
+\define@key{\pxhy@pkgname}{fallback-cidm}[true]{%
+  \pxhy@handle@key{fallback-cidm}{#1}{fallback@cidm#1}%
 }
 % 'extjis=<bool>'
 \pxhy@extjis@usetrue
@@ -475,6 +481,25 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 % induced if-level.
 \@gobbletwo\if\if \def\pxhy@cond#1\fi{%
   #1\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi
+}
+
+%% \pxhy@ifempty{<text>}{<true>}{<false>}
+\def\pxhy@ifempty#1{%
+  \pxhy@cond\ifx\pxhy@mt#1\pxhy@mt\fi
+}
+
+%% \pxhy@read@num{<text>}\CScont
+\def\pxhy@read@num#1{%
+  \expandafter\pxhy@read@num@a\number#1\pxhy@mk#1\pxhy@mk#1\pxhy@mk
+}
+\def\pxhy@read@num@a#1#2\pxhy@mk{%
+  \expandafter\pxhy@read@num@b\romannumeral\if-#1\else-\fi
+}
+\def\pxhy@read@num@b#1\pxhy@mk#2\pxhy@mk{%
+  \expandafter\pxhy@read@num@c\number\pxhy@ifempty{#1}{#2}{}\pxhy@mk
+}
+\def\pxhy@read@num@c#1\pxhy@mk#2{%
+  \pxhy@cond\ifnum#1<\z@\fi{#2{0}}{#2{#1}}%
 }
 
 %--------------------------------------- Helpers (e-TeX)
@@ -774,6 +799,24 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   % If the token should be defined, it is replaced for safety.
   \else \csname pxhy@<#1>\endcsname
   \fi
+}
+
+%% \pxhy@fallback@num{<prefix>}<fast>{<number>}
+% Makes a bad character with label '<prefix><number>', after parsing
+% the given number input.
+\def\pxhy@fallback@num#1#2#3{%
+  \ifpxhy@fallback@warn
+    \if t#2%
+      \expandafter\pxhy@fallback@num@a\expandafter{\number#3}{#1}%
+    \else
+      \pxhy@read@num{#3}\pxhy@fallback@num@a{#1}%
+    \fi
+  \else
+    \pxjahyperBadCharacter{}%
+  \fi
+}
+\def\pxhy@fallback@num@a#1#2{%
+  \pxjahyperBadCharacter{#2#1}%
 }
 
 %--------------------------------------- Hooks to pdfstringdef
@@ -1091,11 +1134,30 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \fi
 }
 
+%% \pxhy@CIDC{<cid>} / \pxhy@CIDK{<cid>} / \pxhy@CIDT{<cid>}
+\def\pxhy@CIDC{\pxhy@fallback@num{CIDC+}f}
+\def\pxhy@CIDK{\pxhy@fallback@num{CIDK+}f}
+\def\pxhy@CIDT{\pxhy@fallback@num{CIDT+}f}
+
+%% \pxhy@dispatch@fallback@cidm
+\@onlypreamble\pxhy@dispatch@fallback@cidm
+\def\pxhy@dispatch@fallback@cidm{%
+  \global\let\pxhy@dispatch@fallback@cidm\relax
+  \ltx@GlobalPrependToMacro\pdfstringdefPreHook{%
+    \ifpxhy@fallback@cidm
+      \let\CIDC\pxhy@CIDC
+      \let\CIDK\pxhy@CIDK
+      \let\CIDT\pxhy@CIDT
+    \fi
+  }%
+}
+
 %% enable hooks
 \pxhy@hook@after@package{otf}{\pxhy@dispatch@otfcid}
 \ifpxhy@otfmacros
   \pxhy@hook@after@package{ajmacros}{\pxhy@dispatch@otfmacros}
 \fi
+\pxhy@hook@after@package{mlcid}{\pxhy@dispatch@fallback@cidm}
 
 \fi
 %--------------------------------------- Extended JIS mapping
