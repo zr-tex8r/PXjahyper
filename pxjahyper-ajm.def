@@ -104,6 +104,12 @@
   \fi
 }
 
+%% \pxhy@cc@anchor@string{<macro-name>}{<number>}
+% Expands to "anchor-string form" of a CC macro.
+\def\pxhy@cc@anchor@string#1#2{%
+  \pxjahyperBadCharacter{aj#1+\number#2}%
+}
+
 %--------------------------------------- \pdfstringdef hook
 
 \pdfstringdefDisableCommands{%
@@ -209,6 +215,45 @@
 \let\pxhy@two@digits\relax
 \let\pxhy@knumeral\relax
 
+%--------------------------------------- for counter commands
+
+%% \pxhy@cc@macro@name@list
+\let\pxhy@cc@macro@name@list\@empty
+
+%% \pxhy@DeclareCCMacro{<macro-name>}...{<body>}
+\def\pxhy@DeclareCCMacro#1{%
+  \eappto\pxhy@cc@macro@name@list{`\do{#1}}%
+  \pxhy@DeclareMacro{#1}%
+}
+
+%% \pxhy@DeclareCCMacroVar{<macro-name>}...{<body-n>}{<body-v>}
+% Variant of \pxhy@DeclareMacro, where the *-variant of the macro
+% is declared. The parameter '...' will be shared with both forms.
+\def\pxhy@DeclareCCMacroVar#1{%
+  \eappto\pxhy@cc@macro@name@list{`\do{#1@N}`\do{#1@V}}%
+  \pxhy@DeclareMacroVar{#1}%
+}
+
+%% \pxhy@finish@declare@cc@macros
+% Must be invoked after all CC macros are defined.
+\def\pxhy@finish@declare@cc@macros{%
+  \let\do\pxhy@amend@cc@macro
+  \pxhy@cc@macro@name@list
+  \let\pxhy@cc@macro@name@list\@empty
+}
+
+%% \pxhy@amend@cc@macro{<macro-name>}
+\def\pxhy@amend@cc@macro#1{%
+  \expandafter\pxhy@amend@cc@macro@a
+      \csname\pxhy@#1\expandafter\endcsname
+      \csname\pxhy@#1@A\expandafter\endcsname
+      \csname\pxhy@#1@D\endcsname{#1}%
+}
+\def\pxhy@amend@cc@macro@a#1#2#3#4{%
+  \gdef#2{\pxhy@cc@anchor@string{#4}}%
+  \global\let#3#1%
+  \gdef#1{\pxhy@if@in@anchor#2#3}%
+}
 %--------------------------------------- the redefinitions
 
 % A text command invoked in PDF-sttings must be "string-OK".
@@ -242,7 +287,7 @@
 % used as fallback (e.g. \ajKuroMaru{21}→“㉑)”.
 
 %%<!> \ajMaru[*]{<number>}
-\pxhy@DeclareMacroVar{Maru}#1{%N
+\pxhy@DeclareCCMacroVar{Maru}#1{%N
   \pxhy@fallback{0}{51}{100}{%
     \pxhy@rshift{0/8224,1/7554,21/8070,22/8080,32/10212,101}%
   }{\pxhy@numeral{#1}}%
@@ -252,7 +297,7 @@
   }{`\ajMaru{#1}}%
 }
 %%<!> \ajKuroMaru[*]{<number>}
-\pxhy@DeclareMacroVar{KuroMaru}#1{%N
+\pxhy@DeclareCCMacroVar{KuroMaru}#1{%N
   \pxhy@fallback{0}{21}{100}{%
     \pxhy@rshift{0/10503,1/8285,10/10504,101}%
   }{`\ajMaru{#1}}%
@@ -262,7 +307,7 @@
   }{`\ajKuroMaru{#1}}%
 }
 %%<!> \ajKaku[*]{<number>}
-\pxhy@DeclareMacroVar{Kaku}#1{%N
+\pxhy@DeclareCCMacroVar{Kaku}#1{%N
   \pxhy@fallback{0}{0}{100}{%
     \pxhy@twirange{10764}{10774}%
   }{`\ajMaru{#1}}%
@@ -272,7 +317,7 @@
   }{`\ajMaru{#1}}%
 }
 %%<!> \ajKuroKaku[*]{<number>}
-\pxhy@DeclareMacroVar{KuroKaku}#1{%N
+\pxhy@DeclareCCMacroVar{KuroKaku}#1{%N
   \pxhy@fallback{0}{0}{100}{%
     \pxhy@twirange{11037}{11047}%
   }{`\ajMaru{#1}}%
@@ -282,7 +327,7 @@
   }{`\ajMaru{#1}}%
 }
 %%<!> \ajMaruKaku[*]{<number>}
-\pxhy@DeclareMacroVar{MaruKaku}#1{%N
+\pxhy@DeclareCCMacroVar{MaruKaku}#1{%N
   \pxhy@fallback{0}{0}{100}{%
     \pxhy@twirange{11307}{11317}%
   }{`\ajMaru{#1}}%
@@ -293,7 +338,7 @@
   }{`\ajMaru{#1}}%
 }
 %%<!> \ajKuroMaruKaku[*]{<number>}
-\pxhy@DeclareMacroVar{KuroMaruKaku}#1{%N
+\pxhy@DeclareCCMacroVar{KuroMaruKaku}#1{%N
   \pxhy@fallback{0}{0}{100}{%
     \pxhy@twirange{11576}{11586}%
   }{`\ajMaru{#1}}%
@@ -303,7 +348,7 @@
   }{`\ajMaru{#1}}%
 }
 %%<!> \ajKakko[*]{<number>}
-\pxhy@DeclareMacroVar{Kakko}#1{%N
+\pxhy@DeclareCCMacroVar{Kakko}#1{%N
   \pxhy@fallback{0}{21}{100}{%
     \pxhy@rshift{0/8227,1/8070,21/9873,101}%
   }{(\pxhy@numeral{#1})}%
@@ -313,7 +358,7 @@
   }{`\ajKakko{#1}}%
 }
 %%<!> \ajRoman[*]{<number>}
-\pxhy@DeclareMacroVar{Roman}#1{%N
+\pxhy@DeclareCCMacroVar{Roman}#1{%N
   \pxhy@fallback{1}{13}{15}{%
     \pxhy@rshift{1/7574,11/8214,13/8282,16}%
   }{`\@Roman{#1}}%
@@ -323,132 +368,132 @@
   }{`\ifnum#1=\#{4}IIII`\else`\ajRoman{#1}`\fi}%
 }
 %%<!> \ajroman{<number>}
-\pxhy@DeclareMacro{roman}#1{%
+\pxhy@DeclareCCMacro{roman}#1{%
   \pxhy@fallback{1}{13}{15}{%
     \pxhy@rshift{1/8091,11/8287,16}%
   }{`\@roman{#1}}%
 }
 %%<!> \ajPeriod{<number>}
-\pxhy@DeclareMacro{Period}#1{%
+\pxhy@DeclareCCMacro{Period}#1{%
   \pxhy@fallback{0}{1}{11}{%
     0.%
   }{\pxhy@rshift{0/8061,10/20577,12}}%
 }
 %%<!> \ajKakkoYobi{<number>}
-\pxhy@DeclareMacro{KakkoYobi}#1{\pxhy@rshift{1/8196,10}}
+\pxhy@DeclareCCMacro{KakkoYobi}#1{\pxhy@rshift{1/8196,10}}
 %%<!> \ajKakkoroman{<number>}
-\pxhy@DeclareMacro{Kakkoroman}#1{%
+\pxhy@DeclareCCMacro{Kakkoroman}#1{%
   \pxhy@fallback{1}{1}{15}{%
     \pxhy@rshift{1/9973,16}%
   }{(`\ajroman{#1})}%
 }
 %%<!> \ajKakkoRoman{<number>}
-\pxhy@DeclareMacro{KakkoRoman}#1{%
+\pxhy@DeclareCCMacro{KakkoRoman}#1{%
   \pxhy@fallback{1}{1}{15}{%
     \pxhy@rshift{1/9988,16}%
   }{(`\ajRoman{#1})}%
 }
 %%<!> \ajKakkoalph{<number>}
-\pxhy@DeclareMacro{Kakkoalph}#1{\pxhy@rshift{1/8111,27}}
+\pxhy@DeclareCCMacro{Kakkoalph}#1{\pxhy@rshift{1/8111,27}}
 %%<!> \ajKakkoAlph{<number>}
-\pxhy@DeclareMacro{KakkoAlph}#1{\pxhy@rshift{1/10003,27}}
+\pxhy@DeclareCCMacro{KakkoAlph}#1{\pxhy@rshift{1/10003,27}}
 %%<!> \ajKakkoHira{<number>}
-\pxhy@DeclareMacro{KakkoHira}#1{%
+\pxhy@DeclareCCMacro{KakkoHira}#1{%
   \pxhy@fallback{1}{1}{48}{%
     \pxhy@rshift{1/10029,49}%
   }{(\pxhy@rshift{1/10029,49})}% with parens
 }
 %%<!> \ajKakkoKata{<number>}
-\pxhy@DeclareMacro{KakkoKata}#1{%
+\pxhy@DeclareCCMacro{KakkoKata}#1{%
   \pxhy@fallback{1}{1}{48}{%
     \pxhy@rshift{1/10077,49}%
   }{(\pxhy@rshift{1/10077,49})}% with parens
 }
 %%<!> \ajKakkoKansuji{<number>}
-\pxhy@DeclareMacro{KakkoKansuji}#1{%
+\pxhy@DeclareCCMacro{KakkoKansuji}#1{%
   \pxhy@fallback{1}{11}{20}{%
     \pxhy@rshift{1/10125,21}%
   }{(\pxhy@knumeral{#1})}%
 }
 %%<!> \ajMaruKansuji{<number>}
-\pxhy@DeclareMacro{MaruKansuji}#1{\pxhy@rshift{1/10460,11}}
+\pxhy@DeclareCCMacro{MaruKansuji}#1{\pxhy@rshift{1/10460,11}}
 %%<!> \ajMarualph{<number>}
-\pxhy@DeclareMacro{Marualph}#1{\pxhy@rshift{1/10312,27}}
+\pxhy@DeclareCCMacro{Marualph}#1{\pxhy@rshift{1/10312,27}}
 %%<!> \ajMaruAlph{<number>}
-\pxhy@DeclareMacro{MaruAlph}#1{\pxhy@rshift{1/10338,27}}
+\pxhy@DeclareCCMacro{MaruAlph}#1{\pxhy@rshift{1/10338,27}}
 %%<!> \ajMaruHira{<number>}
-\pxhy@DeclareMacro{MaruHira}#1{\pxhy@rshift{1/10364,49}}
+\pxhy@DeclareCCMacro{MaruHira}#1{\pxhy@rshift{1/10364,49}}
 %%<!> \ajMaruKata{<number>}
-\pxhy@DeclareMacro{MaruKata}#1{\pxhy@rshift{1/10412,49}}
+\pxhy@DeclareCCMacro{MaruKata}#1{\pxhy@rshift{1/10412,49}}
 %%<!> \ajMaruYobi{<number>}
-\pxhy@DeclareMacro{MaruYobi}#1{%
+\pxhy@DeclareCCMacro{MaruYobi}#1{%
   \pxhy@rshift{1/10470,8/10484,9/10478,10}%
 }
 %%<!> \ajKuroMarualph{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMarualph}#1{`\ajMarualph{#1}}
+\pxhy@DeclareCCMacro{KuroMarualph}#1{`\ajMarualph{#1}}
 %%<!> \ajKuroMaruAlph{<number>}
-\pxhy@DeclareMacro{KuroMaruAlph}#1{\pxhy@rshift{1/10630,27}}
+\pxhy@DeclareCCMacro{KuroMaruAlph}#1{\pxhy@rshift{1/10630,27}}
 %%<!> \ajKuroMaruHira{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruHira}#1{`\ajMaruHira{#1}}
+\pxhy@DeclareCCMacro{KuroMaruHira}#1{`\ajMaruHira{#1}}
 %%<!> \ajKuroMaruKata{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruKata}#1{`\ajMaruKata{#1}}
+\pxhy@DeclareCCMacro{KuroMaruKata}#1{`\ajMaruKata{#1}}
 %%<!> \ajKuroMaruYobi{<number>} : Fallback.
 % fallback to \ajKakuYobi, which is simpler.
-\pxhy@DeclareMacro{KuroMaruYobi}#1{`\ajKakuYobi{#1}}
+\pxhy@DeclareCCMacro{KuroMaruYobi}#1{`\ajKakuYobi{#1}}
 %%<!> \ajKakualph{<number>} : Fallback.
-\pxhy@DeclareMacro{Kakualph}#1{`\ajMarualph{#1}}
+\pxhy@DeclareCCMacro{Kakualph}#1{`\ajMarualph{#1}}
 %%<!> \ajKakuAlph{<number>}
-\pxhy@DeclareMacro{KakuAlph}#1{\pxhy@rshift{1/10900,27}}
+\pxhy@DeclareCCMacro{KakuAlph}#1{\pxhy@rshift{1/10900,27}}
 %%<!> \ajKakuHira{<number>} : Fallback.
-\pxhy@DeclareMacro{KakuHira}#1{`\ajMaruHira{#1}}
+\pxhy@DeclareCCMacro{KakuHira}#1{`\ajMaruHira{#1}}
 %%<!> \ajKakuKata{<number>} : Fallback.
-\pxhy@DeclareMacro{KakuKata}#1{`\ajMaruKata{#1}}
+\pxhy@DeclareCCMacro{KakuKata}#1{`\ajMaruKata{#1}}
 %%<!> \ajKakuYobi{<number>}
-\pxhy@DeclareMacro{KakuYobi}#1{\pxhy@rshift{1/11022,8}}
+\pxhy@DeclareCCMacro{KakuYobi}#1{\pxhy@rshift{1/11022,8}}
 %%<!> \ajKuroKakualph{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroKakualph}#1{`\ajMarualph{#1}}
+\pxhy@DeclareCCMacro{KuroKakualph}#1{`\ajMarualph{#1}}
 %%<!> \ajKuroKakuAlph{<number>}
-\pxhy@DeclareMacro{KuroKakuAlph}#1{\pxhy@rshift{1/11173,27}}
+\pxhy@DeclareCCMacro{KuroKakuAlph}#1{\pxhy@rshift{1/11173,27}}
 %%<!> \ajKuroKakuHira{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroKakuHira}#1{`\ajMaruHira{#1}}
+\pxhy@DeclareCCMacro{KuroKakuHira}#1{`\ajMaruHira{#1}}
 %%<!> \ajKuroKakuKata{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroKakuKata}#1{`\ajMaruKata{#1}}
+\pxhy@DeclareCCMacro{KuroKakuKata}#1{`\ajMaruKata{#1}}
 %%<!> \ajKuroKakuYobi{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroKakuYobi}#1{`\ajKakuYobi{#1}}
+\pxhy@DeclareCCMacro{KuroKakuYobi}#1{`\ajKakuYobi{#1}}
 %%<!> \ajMaruKakualph{<number>} : Fallback.
-\pxhy@DeclareMacro{MaruKakualph}#1{`\ajMarualph{#1}}
+\pxhy@DeclareCCMacro{MaruKakualph}#1{`\ajMarualph{#1}}
 %%<!> \ajMaruKakuAlph{<number>}
-\pxhy@DeclareMacro{MaruKakuAlph}#1{\pxhy@rshift{1/11443,27}}
+\pxhy@DeclareCCMacro{MaruKakuAlph}#1{\pxhy@rshift{1/11443,27}}
 %%<!> \ajMaruKakuHira{<number>} : Fallback.
-\pxhy@DeclareMacro{MaruKakuHira}#1{`\ajMaruHira{#1}}
+\pxhy@DeclareCCMacro{MaruKakuHira}#1{`\ajMaruHira{#1}}
 %%<!> \ajMaruKakuKata{<number>} : Fallback.
-\pxhy@DeclareMacro{MaruKakuKata}#1{`\ajMaruKata{#1}}
+\pxhy@DeclareCCMacro{MaruKakuKata}#1{`\ajMaruKata{#1}}
 %%<!> \ajMaruKakuYobi{<number>} : Fallback.
-\pxhy@DeclareMacro{MaruKakuYobi}#1{`\ajKakuYobi{#1}}
+\pxhy@DeclareCCMacro{MaruKakuYobi}#1{`\ajKakuYobi{#1}}
 %%<!> \ajKuroMaruKakualph{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruKakualph}#1{`\ajMarualph{#1}}
+\pxhy@DeclareCCMacro{KuroMaruKakualph}#1{`\ajMarualph{#1}}
 %%<!> \ajKuroMaruKakuAlph{<number>}
-\pxhy@DeclareMacro{KuroMaruKakuAlph}#1{\pxhy@rshift{1/11712,27}}
+\pxhy@DeclareCCMacro{KuroMaruKakuAlph}#1{\pxhy@rshift{1/11712,27}}
 %%<!> \ajKuroMaruKakuHira{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruKakuHira}#1{`\ajMaruHira{#1}}
+\pxhy@DeclareCCMacro{KuroMaruKakuHira}#1{`\ajMaruHira{#1}}
 %%<!> \ajKuroMaruKakuKata{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruKakuKata}#1{`\ajMaruKata{#1}}
+\pxhy@DeclareCCMacro{KuroMaruKakuKata}#1{`\ajMaruKata{#1}}
 %%<!> \ajKuroMaruKakuYobi{<number>} : Fallback.
-\pxhy@DeclareMacro{KuroMaruKakuYobi}#1{`\ajKakuYobi{#1}}
+\pxhy@DeclareCCMacro{KuroMaruKakuYobi}#1{`\ajKakuYobi{#1}}
 %%<!> \ajNijuMaru{<number>}
-\pxhy@DeclareMacro{NijuMaru}#1{\pxhy@rshift{1/16222,11}}
+\pxhy@DeclareCCMacro{NijuMaru}#1{\pxhy@rshift{1/16222,11}}
 %%<!> \ajRecycle{<number>}
-\pxhy@DeclareMacro{Recycle}#1{\pxhy@rshift{0/16314,12}}
+\pxhy@DeclareCCMacro{Recycle}#1{\pxhy@rshift{0/16314,12}}
 %%<!> \ajHasenKakuAlph{<number>}
-\pxhy@DeclareMacro{HasenKakuAlph}#1{\pxhy@rshift{1/20496,7}}
+\pxhy@DeclareCCMacro{HasenKakuAlph}#1{\pxhy@rshift{1/20496,7}}
 %%<!> \ajCross{<number>}
-\pxhy@DeclareMacro{Cross}#1{%
+\pxhy@DeclareCCMacro{Cross}#1{%
   \pxhy@fallback{0}{0}{9}{%
     \pxhy@rshift{0/20523,10}%
   }{\pxhy@numeral{#1}\UTF{00D7}}%
 }
 %%<!> \ajSlanted[*]{<number>}
-\pxhy@DeclareMacroVar{Slanted}#1{%N
+\pxhy@DeclareCCMacroVar{Slanted}#1{%N
   \pxhy@fallback{0}{0}{59}{%
     \pxhy@rshift{0/9460,10/20589,60}%
   }{\pxhy@numeral{#1}}%
@@ -459,7 +504,7 @@
 }
 %%<!> \ajApostrophe{<number>}
 %%<!> \ajYear{<number>} (alias)
-\pxhy@DeclareMacro{Apostrophe}#1{%
+\pxhy@DeclareCCMacro{Apostrophe}#1{%
   \pxhy@fallback{0}{0}{99}{%
     \pxhy@rshift{0/20649,100}%
   }{\UTF{2019}\pxhy@two@digits{#1}}%
@@ -467,13 +512,15 @@
 \pxhy@DeclareAlias{Year}{Apostrophe}
 %%<!> \ajSquareMark[*]{<number>}
 % Note: +-variant is unsupported.
-\pxhy@DeclareMacroVar{SquareMark}#1{%N
+\pxhy@DeclareCCMacroVar{SquareMark}#1{%N
   \pxhy@rshift{1/12229,13}%
 }{%V
   \pxhy@rshift{1/12241,10}%
 }
 %%<!> \ajHishi{<number>}
-\pxhy@DeclareMacro{Hishi}#1{\pxhy@rshift{1/12256,5}}
+\pxhy@DeclareCCMacro{Hishi}#1{\pxhy@rshift{1/12256,5}}
+
+\pxhy@finish@declare@cc@macros
 
 %-----------------------
 

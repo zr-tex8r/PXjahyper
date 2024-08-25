@@ -767,7 +767,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     \pxhy@cond \ifpxhy@utfXVI \fi{%
       \pxhy@uchex@big#1"000000\pxhy@end
     }{%else
-      \pxhy@uchex@out{#1}%
+      \pxhy@uchex@out@pre{#1}%
     }%
   }{%else
     \pxhy@uchex@small#1"0000\pxhy@end
@@ -777,7 +777,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \pxhy@uchex@small@a#1#2#3#4#5\pxhy@end
 }
 \def\pxhy@uchex@small@a#1"#2\pxhy@end{%
-  \pxhy@uchex@out{#2#1}%
+  \pxhy@uchex@out@pre{#2#1}%
 }
 \def\pxhy@uchex@big#1#2#3#4#5#6#7#8\pxhy@end{%
   \pxhy@uchex@big@a#1#2#3#4#5#6#7\pxhy@end
@@ -799,22 +799,33 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
       \csname pxhy@qh/3#6\endcsname
 }
 \def\pxhy@uchex@big@d#1#2#3#4#5\pxhy@end{%
-  \pxhy@uchex@out{D#1#2#3}%
-  \pxhy@uchex@out{D#4#5}%
+  \pxhy@uchex@out@pre{D#1#2#3}%
+  \pxhy@uchex@out@pre{D#4#5}%
 }
 \edef\pxhy@uchex@error{%
-  \noexpand\pxhy@uchex@out{\pxhy@uc@REPL}%
+  \noexpand\pxhy@uchex@out@pre{\pxhy@uc@REPL}%
+}
+\def\pxhy@uchex@out@pre#1{%
+  \pxhy@if@in@anchor{% then Unicode does not work
+    \pxjahyperBadCharacter{U+#1}%
+  }{%else
+    \pxhy@uchex@out{#1}%
+  }%
 }
 
 %--------------------------------------- Unavailable characters
 
 %%<+> \pxjahyperBadCharacter{<label>}
 \newcommand*\pxjahyperBadCharacter[1]{%
-  \ifpxhy@fallback@warn
-    % issue a warning
-    \pxhy@bad@character@a{#1}%
-  \fi
-  \pxhy@print@geta
+  \pxhy@if@in@anchor{%
+    #1;% label is output as-is
+  }{%else
+    \ifpxhy@fallback@warn
+      % issue a warning
+      \pxhy@bad@character@a{#1}%
+    \fi
+    \pxhy@print@geta
+  }%
 }
 \def\pxhy@bad@character@a#1{%
   % Here the control sequence with name <label> is supposed to be
@@ -833,7 +844,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 % Makes a bad character with label '<prefix><number>', after parsing
 % the given number input.
 \def\pxhy@fallback@num#1#2#3{%
-  \ifpxhy@fallback@warn
+  \if \ifpxhy@fallback@warn T\else \pxhy@if@in@anchor{T}{F}\fi T%
     \if t#2%
       \expandafter\pxhy@fallback@num@a\expandafter{\number#3}{#1}%
     \else
@@ -846,6 +857,25 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 \def\pxhy@fallback@num@a#1#2{%
   \pxjahyperBadCharacter{#2#1}%
 }
+
+%--------------------------------------- Stuffs for anchor strings
+
+% Sometimes \pdfstringdef is invoked to form anchor strings.
+% There "unicode-mode" of hyperref is temporarily disabled;
+% moreover, ToUnicode specials are not applied to such strings.
+% Consequently, only ASCII characters can be used there.
+% Anchor strings are for identification and not presentation;
+% so special fallback for special characters are needed.
+
+%% \pxhy@if@in@anchor{<true>}{<false>}
+% Tests if we are inside anchors.
+\let\pxhy@if@in@anchor\@secondoftwo
+\ifx\Hy@PageAnchorSlide\@undefined\else
+  % We resort to some heuristics....
+  \g@addto@macro\Hy@PageAnchorSlide{%
+    \let\pxhy@if@in@anchor\@firstoftwo
+  }
+\fi
 
 %--------------------------------------- Hooks to pdfstringdef
 
