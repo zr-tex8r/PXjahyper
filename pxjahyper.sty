@@ -348,10 +348,25 @@
   \pxhy@uniescapetrue
 \fi\fi
 
+%% \pxhy@if@really@unicode{<true>}{<false>}
+% Tests if hyperref unicode-mode is *currently* in effect.
+% (Assuming unicode-mode is enabled by the settings.)
+\let\pxhy@if@really@unicode\@undefined
+
 % hyperref 'unicode' mode
 \ifpxhy@hy@unicode
   \pxhy@uniescapefalse
   %\pxhy@otfutftrue
+  % placed at the top of the hook
+  \AtEndOfPackage{\ltx@GlobalPrependToMacro\pdfstringdefPreHook{%
+    \ifx\ifpdfstringunicode\@undefined
+      \ifHy@unicode \let\pxhy@if@really@unicode\@firstoftwo
+      \else \let\pxhy@if@really@unicode\@secondoftwo
+      \fi
+    \else % '\ifpdfstringunicode' is provided by hyperref
+      \let\pxhy@if@really@unicode\ifpdfstringunicode
+    \fi
+  }}
 \fi
 % otfcid requrires otfutf.
 \ifpxhy@otfutf \else \ifpxhy@otfcid
@@ -852,7 +867,11 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \def\pxhy@Ux{\pxhy@uchex}%
   \pxhy@utfXVIfalse
   \def\pxhy@uchex@out#1{%
-    \unichar{"#1}%
+    \pxhy@if@really@unicode{%
+      \unichar{"#1}%
+    }{%else % something wrong!
+      \pxjahyperBadCharacter{U+#1}%
+    }%
   }
 
 \else\ifpxhy@Uchar@avail           %<*Uchar>
