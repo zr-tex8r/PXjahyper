@@ -73,6 +73,9 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.5  〈2024/08/25〉
+      - アンカー文字列での動作を修正。
+
   * Version 1.4  〈2024/08/14〉
       - 設定キー `fallback-warn` を追加。
       - 設定キー `fallback-cidm` を追加。

@@ -17,12 +17,13 @@
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
 \usepackage[verb]{bxghost}
-\newcommand{\PkgVersion}{1.4}
-\newcommand{\PkgDate}{2024/08/14}
+\newcommand{\PkgVersion}{1.5}
+\newcommand{\PkgDate}{2024/08/25}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
 \newcommand{\Means}{：\quad}
+\newcommand{\／}{\mbox{}／\mbox{}}
 \providecommand{\Strong}[1]{{\headfont#1}}
 %-----------------------------------------------------------
 \begin{document}
@@ -79,7 +80,7 @@
 \paragraph{plautopatchとの関係}
 \Pkg{plautopatch}パッケージが事前に読み込まれている場合は、
 \Pkg{hyperref}が読み込まれるとその直後に自動的に\Pkg{pxjahyper}が
-オプション無しで読み込まれる。
+\Strong{オプション無しで}読み込まれる。
 もし何らかのオプションを指定したい場合は、
 \Pkg{hyperref}の読込より前に|\PassOptionsToPackage|で
 オプションを指定する必要がある。
@@ -89,14 +90,14 @@
 
 \paragraph{使用可能なオプション}\mbox{}
 \begin{itemize}
-\item \Strong{設定キー記述}\Means
-  |\pxjahypersetup|命令の引数に書く設定記述をパッケージオプションに
-  書くことができる。
+\item \Strong{パラメタ設定}\Means
+  |\pxjahypersetup|命令の引数に書くパラメタ設定設定記述を
+  パッケージオプションに書くことができる。
   例えば
 \begin{quote}\small\begin{verbatim}
 \usepackage[fallback=delete]{pxjahyper}
 \end{verbatim}\end{quote}
-  と指定すると、表現不能文字を代替するゲタ文字が出力されなくなる。
+  と指定すると、表現不能な文字を代替するゲタ文字が出力されなくなる。
 \item \Strong{ドライバオプション}\Means
   以下の値が指定できる。
   \begin{itemize}
@@ -110,8 +111,8 @@
         この旧名も\Strong{非推奨}とする。}%
       は\Strong{非推奨}とする。
   \item |nodvidriver|\Means
-    ドライバ依存動作の無効化を明示的に指示する。
-    ほとんどの動作が無効になる。
+    ドライバ依存動作の無効化を指示する。
+    ほとんどの機能が無効になる。
     \footnote{1.0版において|nodvidriver|の非推奨の別名の|none|は
       \Strong{廃止}された。}
     %（0.5版から非推奨だった。）
@@ -191,7 +192,7 @@
   \Pkg{hyperref}が出力する|.out|ファイルの先頭に日本語の文字を含む
   コメント行を出力する。
   \Note {\pTeX}系エンジンの「入力漢字コード自動判定」に対する対策。
-\item |jacommentline|\Means
+\item |nojacommentline|\Means
   |jacommentline|の否定。
   \Note 不具合が発生したときのために無効化できるようにしている。
 \item |force-unicode|（1.4版で\Strong{非推奨}）\Means
@@ -207,14 +208,15 @@
 自動的に実施される。
 
 %-------------------
-\subsection{設定}
+\subsection{パラメタ設定}
 \label{ssec:setup}
 
-パッケージの動作の設定を|\pxjahypersetup|命令で行える。
+パッケージの動作を制御する設定を|\pxjahypersetup|命令で行える。
 
 \begin{quote}\small
 |\pxjahypersetup{|\Meta{キー}|=|\Meta{値}|,...}|
 \end{quote}
+\Note 真偽値は|true|\／|false|で指定する。
 
 有効な設定キーは以下の通り。
 
@@ -232,8 +234,7 @@
   \end{itemize}
   \Note 以下、パッケージ動作の解説中で「ゲタ記号を出力」と
     ある場合は実際にはこの設定に従う。
-\item |fallback-warn=|\Meta{真偽値}%
-  \footnote{真偽値は|true|／|false|で指定する。}\Means
+\item |fallback-warn=|\Meta{真偽値}\Means
   PDF文字列中の表現不能な文字について「ゲタ記号を出力」する際に
   警告を出すか。
   既定値は真。
