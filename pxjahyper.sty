@@ -62,8 +62,10 @@
 \newif\ifpxhy@ajhankaku@chars
 
 %%<*> \pxjahypersetup{<key>=<value>,...}
-\newcommand*\pxjahypersetup{%
-  \setkeys{\pxhy@pkgname}%
+\@ifdefinable\pxjahypersetup{%
+  \DeclareRobustCommand*\pxjahypersetup{%
+    \setkeys{\pxhy@pkgname}%
+  }%
 }
 %% \pxhy@handle@key{<key>}{<value>}{<name>}
 \def\pxhy@handle@key#1#2#3{%
@@ -488,6 +490,15 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \pxhy@cond\ifx\pxhy@mt#1\pxhy@mt\fi
 }
 
+%% \pxhy@E\newrobustcmd*\CS...
+% Does \newrobustcmd* if etoolbox is available;
+% does \DeclareRobustCommand* otherwise.
+\def\pxhy@E\newrobustcmd*#1{%
+  \def\pxhy@next{\providecommand*\pxhy@next}%
+  \@ifdefinable#1{\def\pxhy@next{\DeclareRobustCommand*#1}}%
+  \pxhy@next
+}
+
 %% \pxhy@read@num{<text>}\CScont
 \def\pxhy@read@num#1{%
   \expandafter\pxhy@read@num@a\number#1\pxhy@mk#1\pxhy@mk#1\pxhy@mk
@@ -508,6 +519,8 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %% packages
 \ifpxhy@etoolbox
   \RequirePackage{etoolbox}[2011/01/03]%v2.1
+  \robustify\pxjahypersetup
+  \let\pxhy@E\relax
 \fi
 
 %% \pxhy@if@star{<varient>}{<normal>}
@@ -823,6 +836,10 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 %% variables
 \let\pxhy@str\relax
+
+%%<+> \Ux{<hex>}
+% (This is a dummy declaration.)
+\ifodd\z@ \providecommand*\Ux[1]{} \fi
 
 %% \pxhy@Ux
 % The definition of \Ux in PDF strings.
@@ -1252,7 +1269,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 %%<+> \pxDeclarePdfTextCommand{\CS}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextCommand
-\newcommand*\pxDeclarePdfTextCommand[3]{%
+\pxhy@E\newrobustcmd*\pxDeclarePdfTextCommand[3]{%
   \pxhy@prepare@txtcmd#1%
   \pxhy@decl@pdf@tc{#2}{#3}%
    {\DeclareTextCommand{#1}{\pxhy@pdfenc}}%
@@ -1261,7 +1278,7 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 
 %%<+> \pxDeclarePdfTextComposite{\CS}{<arg>}{<jis>}{<ucs>}
 \@onlypreamble\pxDeclarePdfTextComposite
-\newcommand*\pxDeclarePdfTextComposite[4]{%
+\pxhy@E\newrobustcmd*\pxDeclarePdfTextComposite[4]{%
   \pxhy@prepare@txtcmd#1%
   \pxhy@decl@pdf@tc{#3}{#4}%
    {\DeclareTextCompositeCommand{#1}{\pxhy@pdfenc}{#2}}%
