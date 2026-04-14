@@ -119,6 +119,12 @@
   \pxhy@macro@name@list
 }
 
+%% \pxhy@unless@ajmacros@bang@wins{<false>}
+\def\pxhy@unless@ajmacros@bang@wins#1{%
+  \ifx\！\pxhy@ajmacros@bang\else #1\fi
+}
+\def\pxhy@ajmacros@bang#1{\csname ajLig小#1\endcsname}
+
 %=======================================
 % Macro Definitions
 \begingroup % entering a big group

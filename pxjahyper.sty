@@ -446,6 +446,13 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \pxhy@get@jchar{\jis"#2}%
   \let#1\pxhy@jchar
 }
+%% \pxhy@let@jchar@real@uc\CS{<unicode-hex>}
+\ifpxhy@ucs@avail
+  \def\pxhy@let@jchar@real@uc#1#2{%
+    \pxhy@get@jchar{\ucs"#2}%
+    \let#1\pxhy@jchar
+  }
+\fi
 
 %% \pxhy@forcecjktoken{<code>}
 \def\pxhy@forcecjktoken#1{\relax}
@@ -1953,6 +1960,10 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 %--------------------------------------- 'disablecmds'
 \ifpxhy@disablecmds
 
+%% \pxhy@unless@ajmacros@bang@wins
+% This definition is superseded by that of pxjahyper-ajm.def.
+\providecommand*\pxhy@unless@ajmacros@bang@wins[1]{#1}
+
 %% \pxhy@rensuji
 \ifpxhy@etex
   \def\pxhy@rensuji{%
@@ -2031,6 +2042,12 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   \pxhy@let@jchar@jc\pxhy@C@ZWSP{2121}
   \pxhy@let@jchar@jc\pxhy@C@ZWQM{2129}
   \pxhy@let@jchar@jc\pxhy@C@ZWEM{212A}
+  \ifpxhy@uptex
+    \pxhy@let@jchar@real@uc\pxhy@C@ZWQQM{2047}
+    \pxhy@let@jchar@real@uc\pxhy@C@ZWQEM{2048}
+    \pxhy@let@jchar@real@uc\pxhy@C@ZWEQM{2049}
+    \pxhy@let@jchar@real@uc\pxhy@C@ZWEEM{203C}
+  \fi
   %% \pxhy@P@tatechuyoko*{<text>}
   \def\pxhy@P@tatechuyoko{\pxhy@if@star\@firstofone\@firstofone}
   %% \pxhy@P@jaspace{<name>}
@@ -2045,7 +2062,15 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
     \unexpanded\expandafter{\pxhy@disable@commands}%
     \pxhy@next\pxhy@C@ZWSP
     \pxhy@next\pxhy@C@ZWQM
-    \pxhy@next\pxhy@C@ZWEM
+    \noexpand\pxhy@unless@ajmacros@bang@wins{%
+      \pxhy@next\pxhy@C@ZWEM
+    }%
+    \ifpxhy@uptex
+      \pxhy@next\pxhy@C@ZWQQM
+      \pxhy@next\pxhy@C@ZWQEM
+      \pxhy@next\pxhy@C@ZWEQM
+      \pxhy@next\pxhy@C@ZWEEM
+    \fi
     \unexpanded{%
       \let\jafontsize\@gobbletwo
       \let\jaspace\pxhy@P@jaspace
