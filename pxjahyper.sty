@@ -448,13 +448,13 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
 }
 
 %% \pxhy@forcecjktoken{<code>}
-\ifpxhy@uptex
-  \ifx\forcecjktoken\@undefined
+\def\pxhy@forcecjktoken#1{\relax}
+\ifx\forcecjktoken\@undefined
+  \ifpxhy@uptex
     \def\pxhy@forcecjktoken#1{\kcatcode#1=18 }
-  \else \def\pxhy@forcecjktoken#1{\forcecjktoken}
   \fi
 \else
-  \def\pxhy@forcecjktoken#1{\relax}
+  \def\pxhy@forcecjktoken#1{\forcecjktoken}
 \fi
 
 %% \pxhy@geta : GETA MARK
