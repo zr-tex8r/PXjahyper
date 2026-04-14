@@ -73,6 +73,11 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.6  〈2026/04/10〉
+      - `otfmacros` 指定時の `ajmacros` の機能の再定義を修正。
+      - `disablecmds` 指定時の jlreq 用の再定義を修正。
+      - pxjahyper-enc： 複数の special が出力されないようにする。
+
   * Version 1.5  〈2024/08/25〉
       - アンカー文字列での動作を修正。
 
