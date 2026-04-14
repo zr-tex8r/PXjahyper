@@ -539,6 +539,7 @@
 \pxhy@DeclareMacro{Nenrei}#1{%
   `\csname pxhy@ajNenrei/`\number#1`\endcsname
 }
+\global\csletcs{pxhy@ajNenrei/0}{\pxhy@ Tsumekakko}
 \csgdef{pxhy@ajNenrei/1}#1{%
   (\pxhy@numeral{#1}\ifnum#1<10 つ\fi)%
 }
@@ -546,7 +547,7 @@
   (\pxhy@numeral{#1}才)%
 }
 \csgdef{pxhy@ajNenrei/3}#1{% FIXME: the original is right?
-  (\pxhy@each@digit{#1}{\pxhy@knumeral@varA つ})%
+  (\pxhy@each@digit{#1}{\pxhy@knumeral@varC つ})%
 }
 \csgdef{pxhy@ajNenrei/4}#1{%
   (\pxhy@knumeral{#1}才)%
@@ -562,7 +563,7 @@
 \csgdef{pxhy@ajnenrei/2}#1{%
   (\pxhy@each@digit{#1}{\pxhy@knumeral@varB 才})%
 }
-\csgdef{pxhy@ajnenrei/3}#1{% FIXME: the original is right?
+\csgdef{pxhy@ajnenrei/3}#1{%
   (\pxhy@each@digit{#1}{\pxhy@knumeral@varA ツ})%
 }
 \csgdef{pxhy@ajnenrei/4}#1{%
@@ -581,9 +582,16 @@
 }
 \gdef\pxhy@knumeral@varB#1#2#3{%<counter><ten><one>
   % 8→八才, 10→十才, 16→十六, 20→二十, 32→三二
-  \ifcase#2 #2#1%
+  \ifcase#2 \pxhy@kdigit#3#1%
   \or 十\ifcase#3 #1\else \pxhy@kdigit#3\fi
   \else \pxhy@kdigit#2\ifcase#3 十\else \pxhy@kdigit#3\fi
+  \fi
+}
+\gdef\pxhy@knumeral@varC#1#2#3{%<tsu><ten><one> % dubious
+  % 8→八つ, 10→一〇, 16→十六, 20→二〇, 32→三十二
+  \ifcase#2 \pxhy@kdigit#3#1%
+  \or \ifcase#3 一〇\else 十\pxhy@kdigit#3\fi
+  \else \pxhy@kdigit#2\ifcase#3 〇\else 十\pxhy@kdigit#3\fi
   \fi
 }
 
@@ -620,6 +628,22 @@
 \do{5/8}{215D}
 \do{7/8}{215E}
 \do{0/3}{2189}
+% reduce fractions similar to ajmacros
+\def\do#1#2#3{%
+  \def\y{\pxhy@ajFrac{#1}{#2}}%
+  \@for\x:=#3\do{\global\cslet{pxhy@ucs@frac/\x}\y}%
+}
+\do{1}{2}{2/4,3/6,4/8,5/10,6/12}
+\do{1}{3}{2/6,3/9,4/12}
+\do{2}{3}{4/6,6/9,8/12}
+\do{1}{4}{2/8,3/12}
+\do{3}{4}{6/8,9/12}
+\do{1}{5}{2/10}
+\do{2}{5}{4/10}
+\do{3}{5}{6/10}
+\do{4}{5}{8/10}
+\do{1}{6}{2/12}
+\do{5}{6}{10/12}
 
 %%<!> \aj半角{<string>}
 % Simply expands to the string.
@@ -781,9 +805,9 @@
 \do{ヲ゛}{\UTF{30FA}}
 \do{小か}{\UTF{3095}}
 \do{小け}{\UTF{3096}}
-\do{小こ}{こ}% fallback
+\do{小こ}{\CID{12269}}
 \do{小ク}{\UTF{31F0}}
-\do{小コ}{コ}% fallback
+\do{小コ}{\CID{12271}}
 \do{小シ}{\UTF{31F1}}
 \do{小ス}{\UTF{31F2}}
 \do{小ト}{\UTF{31F3}}
