@@ -18,48 +18,126 @@
 
 %% variables
 \let\pxhe@driver=d
+\let\pxhe@driver@opt\relax
+\newif\ifpxhe@bxdvipdfmx@avail
 
 % driver options
+% NB: Only global options are officially supported.
 \DeclareOption{dvipdfmx}{%
   \let\pxhe@driver=d\relax
+  \def\pxhe@driver@opt{dvipdfmx}%
 }
 \DeclareOption{dvips}{%
   \let\pxhe@driver=s\relax
+  \def\pxhe@driver@opt{dvips}%
 }
 \DeclareOption{nodvidriver}{%
   \let\pxhe@driver=0\relax
+  \def\pxhe@driver@opt{nodvidriver}%
 }
 % dispatch
 \ProcessOptions*
+
+% load 'bxdvipdfmx-tounicode' if available
+\IfFileExists{bxdvipdfmx-tounicode.sty}{%
+  \pxhe@bxdvipdfmx@availtrue
+  \ifx\pxhe@driver@opt\relax\else
+    \PassOptionsToPackage{\pxhe@driver@opt}{bxdvipdfmx-tounicode}%
+  \fi
+  \RequirePackage{bxdvipdfmx-tounicode}[]
+}{}
 
 %--------------------------------------- user interface
 
 %% variables
 \let\pxhe@bigcode=t
-\let\pxhe@default@tounicode=t
+\let\pxhe@tounicode\@empty
+\let\pxhe@tounicode@default\@empty
 
 %%<*> \suppressbigcode
 \@onlypreamble\suppressbigcode
-\newcommand*\suppressbigcode{%
-  \global\let\pxhe@bigcode=f\relax
+\@ifdefinable\suppressbigcode{%
+  \DeclareRobustCommand*\suppressbigcode{%
+    \global\let\pxhe@bigcode=f\relax
+  }
 }
 
 %%<*> \suppressdefaulttounicode
 \@onlypreamble\suppressdefaulttounicode
-\newcommand*\suppressdefaulttounicode{%
-  \global\let\pxhe@default@tounicode=f\relax
+\@ifdefinable\suppressdefaulttounicode{%
+  \DeclareRobustCommand*\suppressdefaulttounicode{%
+    \global\let\pxhe@tounicode@default\@empty
+  }
 }
 
 %%<+> \pxjahyperToUnicodeSpecial{<name>}
-\newcommand*\pxjahyperToUnicodeSpecial[1]{%
-  \edef\pxhe@tmpa{%
-    \noexpand\pxhe@begin@dvi@hook{\special{pdf:tounicode #1}}%
-  }\pxhe@tmpa
+\ifpxhe@bxdvipdfmx@avail
+  \newcommand*\pxjahyperToUnicodeSpecial[1]{%
+    \bxdvipdfmxToUnicodeSpecial{#1}%
+  }
+\else
+  \@ifdefinable\pxjahyperToUnicodeSpecial{%
+    \DeclareRobustCommand*\pxjahyperToUnicodeSpecial[1]{%
+      \def\pxhe@tounicode{#1}%
+    }%
+  }
+\fi
+
+%--------------------------------------- issue the special
+
+\AtEndOfPackage{%
+  \ifpxhe@bxdvipdfmx@avail
+    \bxdvipdfmxToUnicodeSpecialDefault\pxhe@tounicode@default
+  \else
+    % The value is expanded here.
+    \pxhe@begin@dvi@hook{%
+      \edef\pxhe@tmpa{\pxhe@tounicode}%
+      \ifx\pxhe@tmpa\@empty
+        \edef\pxhe@tmpa{\pxhe@tounicode@default}%
+      \fi
+      \ifx\pxhe@tmpa\@empty\else
+        \special{pdf:tounicode \pxhe@tmpa}%
+      \fi
+    }%
+  \fi
+}
+
+%--------------------------------------- default tounicode special
+
+%% \pxhe@jcode
+\ifnum     \jis"2121="8140
+  \let\pxhe@jcode=s\relax
+\else\ifnum\jis"2121="A1A1
+  \let\pxhe@jcode=e\relax
+\else\ifnum\jis"2121="3000
+  \let\pxhe@jcode=u\relax
+\fi\fi\fi
+\ifx\pxhe@jcode\@undefined
+  \PackageWarningNoLine\pxhe@pkgname
+   {Unknown internal kanji code}
+  \AtEndOfPackage{\suppressdefaulttounicode}
+\fi
+
+%% \pxhe@tounicode@default
+\def\pxhe@tounicode@default{%
+  \if e\pxhe@jcode % euc
+    EUC-UCS2%
+  \else\if s\pxhe@jcode % sjis
+    90ms-RKSJ-UCS2%
+  \else\if t\pxhe@bigcode % ucs, bigcode
+    UTF8-UTF16%
+  \else % ucs, no bigcode
+    UTF8-UCS2%
+  \fi\fi\fi
 }
 
 %--------------------------------------- environment
 
-%% check
+%% quit if using bxdvipdfmx
+\ifpxhe@bxdvipdfmx@avail
+\expandafter\endinput\fi\relax
+
+%% check driver
 \ifx d\pxhe@driver\else
   \ifx s\pxhe@driver
     \PackageWarningNoLine\pxhe@pkgname
@@ -71,21 +149,6 @@
 %% switch 'pxhe@new@hook@system'
 \newif\ifpxhe@new@hook@system
 \@ifl@t@r\fmtversion{2020/10/01}{\pxhe@new@hook@systemtrue}{}
-
-%% \pxhe@jcode
-\ifnum     \jis"2121="8140
-  \let\pxhe@jcode=s\relax
-\else\ifnum\jis"2121="A1A1
-  \let\pxhe@jcode=e\relax
-\else\ifnum\jis"2121="3000
-  \let\pxhe@jcode=u\relax
-\fi\fi\fi
-\ifx\pxhe@jcode\@undefined
-  \PackageError\pxhe@pkgname
-   {Unknown internal kanji code}
-   {Package loading is aborted right now.}
-  \expandafter\endinput
-\fi
 
 %--------------------------------------- begin-dvi hook (new)
 \ifpxhe@new@hook@system
@@ -118,29 +181,6 @@
 }
 
 \fi
-%--------------------------------------- default tounicode special
-
-%% \pxhe@cmap@name
-\def\pxhe@cmap@name{%
-  \if e\pxhe@jcode % euc
-    EUC-UCS2%
-  \else\if s\pxhe@jcode % sjis
-    90ms-RKSJ-UCS2%
-  \else\if t\pxhe@bigcode % ucs, bigcode
-    UTF8-UTF16%
-  \else % ucs, no bigcode
-    UTF8-UCS2%
-  \fi\fi\fi
-}
-
-%% \pxhe@do@default@tounicode
-\def\pxhe@do@default@tounicode{%
-  \if t\pxhe@default@tounicode
-    \special{pdf:tounicode \pxhe@cmap@name}%
-  \fi
-}
-\pxhe@begin@dvi@hook{\pxhe@do@default@tounicode}
-
 %--------------------------------------- done
 \endinput
 %% EOF
