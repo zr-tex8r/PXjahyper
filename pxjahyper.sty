@@ -80,7 +80,7 @@
 
 %--------------------------------------- Package options
 
-%% DVI drivers
+%% driver options
 \DeclareOption{dvipdfmx}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
 }
@@ -123,7 +123,7 @@
   \pxhy@uniescapefalse
   \let\pxhy@nouniescape@given=t
 }
-%% others
+%% feature switches
 \DeclareOption{papersize}{%
   \pxhy@papersizetrue
 }
@@ -186,7 +186,8 @@
   \PackageWarningNoLine\pxhy@pkgname
    {'force-unicode' is DEPRECATED and ignored}%
 }
-\DeclareOption{disable-Ux}{% for debug
+%% for debug
+\DeclareOption{disable-Ux}{%
   \let\pxhy@disable@Ux=t
 }
 %% key-value options
@@ -219,6 +220,7 @@
 \define@key{\pxhy@pkgname}{ajhankaku-chars}[true]{%
   \pxhy@handle@key{ajhankaku-chars}{#1}{ajhankaku@chars#1}%
 }
+
 %% dispatch
 \ExecuteOptions{%
   resetdvidriver,tounicode,papersize,charcmds,jacommentline,%
@@ -334,7 +336,8 @@
   \chardef\pxhy@hook@system=1
 }{}}
 
-%% adjustment
+%--------------------------------------- Option adjustment
+
 % bigcode cannot be used without upTeX.
 \ifpxhy@bigcode \ifpxhy@uptex\else
   \pxhy@bigcodefalse
@@ -349,14 +352,15 @@
 \fi\fi
 
 %% \pxhy@if@really@unicode{<true>}{<false>}
-% Tests if hyperref unicode-mode is *currently* in effect.
-% (Assuming unicode-mode is enabled by the settings.)
+% Tests if hyperref unicode-mode is *currently* in effect, assuming
+% unicode-mode is enabled by the settings.
+% NB. hyperref applies non-unicode-mode when writing a certain kind of
+% PDF-strings even if unicode-mode is enabled.
 \let\pxhy@if@really@unicode\@undefined
 
 % hyperref 'unicode' mode
 \ifpxhy@hy@unicode
   \pxhy@uniescapefalse
-  %\pxhy@otfutftrue
   % placed at the top of the hook
   \AtEndOfPackage{\ltx@GlobalPrependToMacro\pdfstringdefPreHook{%
     \ifx\ifpdfstringunicode\@undefined
