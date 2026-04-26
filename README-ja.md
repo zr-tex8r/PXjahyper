@@ -73,6 +73,11 @@ pxjahyper-enc パッケージ ー 文字コード設定
 更新履歴
 --------
 
+  * Version 1.6a 〈2026/04/26〉
+      - hyperref の `dvipdfmx` オプションがグローバル指定になっていない
+        場合に警告を出す。
+      - 細かいバグ修正。
+
   * Version 1.6  〈2026/04/10〉
       - `otfmacros` 指定時の `ajmacros` の機能の再定義を修正。
       - `disablecmds` 指定時の jlreq 用の再定義を修正。
