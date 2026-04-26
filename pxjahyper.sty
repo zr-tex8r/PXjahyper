@@ -186,6 +186,10 @@
   \PackageWarningNoLine\pxhy@pkgname
    {'force-unicode' is DEPRECATED and ignored}%
 }
+%% flag options
+\DeclareOption{nocheck-driver}{%
+  \let\pxjahyperNoCheckDriver=t%
+}
 %% for debug
 \DeclareOption{disable-Ux}{%
   \let\pxhy@disable@Ux=t
@@ -2097,6 +2101,38 @@ pxhy@fallback@geta = \ifpxhy@fallback@geta true\else false\fi^^J%
   }%
 }
 \pxhy@hook@after@package{ascmac}{\pxhy@dispatch@dc@ascmac}
+
+\fi
+%--------------------------------------- driver warning
+\ifx\pxjahyperNoCheckDriver\@undefined
+
+% only check for dvipdfmx
+\ifnum\pxhy@hook@system>0 \ifnum\pxhy@driver=\pxhy@driver@dvipdfmx %<*>
+
+%% errors
+\def\pxhy@warn@ngopt{%
+  \PackageWarning\pxhy@pkgname
+   {The driver option 'dvipdfmx' is not given\MessageBreak
+    as global option. You should add 'dvipdfmx'\MessageBreak
+    to the option list of \string\documentclass\space when\MessageBreak
+    (at least) using hyperref package.\MessageBreak
+    \@spaces\string\documentclass[dvipdfmx,...]{...}\@gobbletwo}%
+}
+
+\AtEndDocument{%
+  \ifx\pxjahyperNoCheckDriver\@undefined
+    \@ifundefined{c_sys_backend_str}{}{%else
+      \edef\pxhy@tmpa{\@nameuse{c_sys_backend_str}}%
+      \edef\pxhy@tmpb{\detokenize{dvipdfmx}}%
+      \unless\ifx\pxhy@tmpa\pxhy@tmpb
+        \pxhy@warn@ngopt
+      \fi
+    }%
+  \fi
+  \global\let\pxhy@warn@ngopt\relax
+}
+
+\fi\fi %</>
 
 \fi
 %--------------------------------------- All done
