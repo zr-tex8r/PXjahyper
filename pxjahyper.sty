@@ -42,6 +42,7 @@
 \chardef\pxhy@driver@none=0
 \chardef\pxhy@driver@dvipdfmx=1
 \chardef\pxhy@driver@dvips=2
+\chardef\pxhy@driver@dvisvgm=3
 \let\pxhy@driver\@undefined
 \newif\ifpxhy@hy@unicode
 \newif\ifpxhy@jacommentline
@@ -84,7 +85,10 @@
 \DeclareOption{dvipdfmx}{%
   \let\pxhy@driver\pxhy@driver@dvipdfmx
 }
-\DeclareOption{dvipdfm}{%
+\DeclareOption{dvisvgm}{%
+  \let\pxhy@driver\pxhy@driver@dvisvgm
+}
+\DeclareOption{dvipdfm}{% not quite right
   \let\pxhy@driver\pxhy@driver@dvipdfmx
 }
 \DeclareOption{dvips}{%
@@ -262,7 +266,6 @@
 
 %% Check hyperref driver.
 \ifx\pxhy@driver\@undefined
-  \let\pxhy@driver\pxhy@driver@none
   \def\pxhy@tmpa{hdvipdfm}
   \ifx\Hy@driver\pxhy@tmpa
     \let\pxhy@driver\pxhy@driver@dvipdfmx
@@ -271,7 +274,13 @@
   \ifx\Hy@driver\pxhy@tmpa
     \let\pxhy@driver\pxhy@driver@dvips
   \fi
-  \ifnum\pxhy@driver=\pxhy@driver@none \ifx\Hy@driver\@undefined\else
+  \def\pxhy@tmpa{hypertex}
+  \ifx\Hy@driver\pxhy@tmpa
+    \let\pxhy@driver\pxhy@driver@none
+  \fi
+  \ifx\pxhy@driver\@undefined
+    \let\pxhy@driver\pxhy@driver@none
+    \ifx\Hy@driver\@undefined\else
     \PackageWarningNoLine\pxhy@pkgname
      {Unknown hyperref driver: \Hy@driver}
   \fi\fi
@@ -394,8 +403,17 @@
 %% in nodvidriver mode
 \ifnum\pxhy@driver=\pxhy@driver@none
   \pxhy@papersizefalse
-  \pxhy@charcmdsfalse
-\fi
+  % As long as unicode mode of hyperref is in effect,
+  % 'charcmds' does not depend on any driver....
+  \ifpxhy@hy@unicode\else
+    \pxhy@charcmdsfalse
+  \fi
+\else\ifnum\pxhy@driver=\pxhy@driver@dvisvgm
+  % same as nodvidriver
+  \ifpxhy@hy@unicode\else
+    \pxhy@charcmdsfalse
+  \fi
+\fi\fi
 
 \bxDebug{****pxjahyper env^^J%
 pxhy@ptex = \ifpxhy@ptex true\else false\fi^^J%
