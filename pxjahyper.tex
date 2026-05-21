@@ -17,8 +17,8 @@
 \usepackage{shortvrb}
 \MakeShortVerb{\|}
 \usepackage[verb]{bxghost}
-\newcommand{\PkgVersion}{1.6a}
-\newcommand{\PkgDate}{2026/04/26}
+\newcommand{\PkgVersion}{1.6b}
+\newcommand{\PkgDate}{2026/05/22}
 \newcommand{\Pkg}[1]{\textsf{#1}}
 \newcommand{\Meta}[1]{$\langle$\mbox{}#1\mbox{}$\rangle$}
 \newcommand{\Note}{\par\noindent ※}
@@ -44,19 +44,16 @@
   また、|\section|命令の引数のテキストは
   「{\TeX}で組版する版面出力」と「PDF文字列」
   の両方に使われる。
-  後者のような箇所で「{\TeX}の版面出力」と「PDF文字列」を
-  別に指定したい場合は|\texorpdfstring|という命令が利用できる。}）
+  %後者のような箇所で「{\TeX}の版面出力」と「PDF文字列」を
+  %別に指定したい場合は|\texorpdfstring|という命令が利用できる。
+  }）
 をもつPDF文書を作成する場合に必要となる機能を提供する。
 \begin{itemize}
-\item dvipdfmx用の「tounicode special」について、
-  内部漢字コードに応じて適切なものを出力する。
+\item PDF文字列の中で和文文字を正常に
+（文字化けせずに）使えるようにする。
 \item PDF文字列の中で{\LaTeX}カーネル（|\"a|や|\textsection|等）
   や\Pkg{japanese-otf}パッケージ（|\UTF|や|\ajMaru|等）の
   文字出力用命令が“可能な限り”正しく機能するようにする。
-  %ただし、エンジンが{\pTeX}の場合は、out2uni/convbkmk%
-  %（および試験的機能の“force-unicode”）を利用
-  %する場合を除き、JIS~X~0208にない文字は出力できない
-  %（hyperrefの警告が出る）。
 \item {\TeX}の版面拡大機能が使われている
   （|\mag|値が1000でない）場合
   \footnote{典型的には\Pkg{jsclasses}の
@@ -67,6 +64,7 @@
   改めて出力する。
 \item \Pkg{hyperref}が行う「テキスト装飾命令の無力化」の
   対象に、{(u)\pLaTeX}特有のいくつかの命令を追加する。
+\item |.out|ファイルの先頭に日本語文字を含むコメントを出力する。
 \end{itemize}
 
 %===========================================================
@@ -103,6 +101,7 @@
   \begin{itemize}
   \item |dvipdfmx|
   \item |dvips|
+  \item |dvisvgm|
   \item |resetdvidriver|（既定）\Means
     \Pkg{hyperref}のドライバ指定から自動的に判定する。
     \Note 1.1版において名前を|auto|から|resetdvidriver|に変更した。
@@ -124,6 +123,7 @@
     「tounicode special」を発行する。
     \Note この設定は|notounicode|オプションにより打ち消される。
   \item 「tounicode special」を前提にした出力を行う。
+    （“unicodeモード”の場合を除く。）
     \Note この設定は|out2uni|・|convbkmk|オプションと排他である。
   \end{enumerate}
 \item |notounicode|\Means
